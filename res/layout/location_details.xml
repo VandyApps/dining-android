@@ -1,0 +1,67 @@
+<!-- <?xml version="1.0" encoding="utf-8"?> -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<ScrollView android:id="@+restaurantDetails/mainContent"
+        android:layout_width="fill_parent" android:layout_height="fill_parent">
+        <LinearLayout android:layout_width="fill_parent"
+                android:layout_height="wrap_content" android:orientation="vertical"
+                android:paddingBottom="7dp">
+                <RelativeLayout android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" >
+                        <ImageView android:id="@+restaurantDetails/logo"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:layout_centerVertical="true" android:padding="7dp" />
+                        <TextView android:id="@+restaurantDetails/name"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:layout_toRightOf="@restaurantDetails/logo"
+                                android:layout_centerVertical="true" android:textSize="26dp"
+                                android:textColor="@android:color/primary_text_dark"
+                                android:maxLines="2" android:ellipsize="end" />
+                </RelativeLayout>
+                <RelativeLayout android:layout_width="fill_parent"
+                        android:layout_height="wrap_content">
+                        <ImageView android:id="@+restaurantDetails/leftArrow"
+                                android:src="@drawable/arrow_left" android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:layout_alignParentLeft="true"
+                                android:layout_centerVertical="true" android:padding="7dp" />
+                        <ImageView android:id="@+restaurantDetails/rightArrow"
+                                android:src="@drawable/arrow_right" android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentRight="true"
+                                android:layout_centerVertical="true" android:padding="7dp" />
+                        <TextView android:id="@+restaurantDetails/hoursDay"
+                                android:textColor="@android:color/secondary_text_dark"
+                                android:textSize="16dp" android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:gravity="center_horizontal"
+                                android:layout_toLeftOf="@restaurantDetails/rightArrow"
+                                android:layout_toRightOf="@restaurantDetails/leftArrow" />
+                        <TextView android:id="@+restaurantDetails/hoursRangeDisplay"
+                                android:textColor="@android:color/secondary_text_dark"
+                                android:textSize="16dp" android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:layout_below="@restaurantDetails/hoursDay"
+                                android:gravity="center_horizontal" android:layout_toLeftOf="@restaurantDetails/rightArrow"
+                                android:layout_toRightOf="@restaurantDetails/leftArrow" />
+                </RelativeLayout>
+                <TextView android:id="@+restaurantDetails/details"
+                        android:textSize="14dp" android:textColor="@android:color/secondary_text_dark"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:paddingLeft="5dp" android:paddingRight="5dp"
+                        android:paddingBottom="10dp" />
+                <TextView android:id="@+restaurantDetails/phone_header"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="18dp" android:textColor="@android:color/secondary_text_dark"
+                        android:text="Phone Number" android:padding="3dp" />
+                <TextView android:id="@+restaurantDetails/phone"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="14dp" android:textColor="@android:color/secondary_text_dark"
+                        android:paddingLeft="20dp" />
+                <TextView android:id="@+restaurantDetails/web_header"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="18dp" android:textColor="@android:color/secondary_text_dark"
+                        android:text="Internet address" android:padding="3dp" />
+                <TextView android:id="@+restaurantDetails/web"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="14dp" android:textColor="@android:color/secondary_text_dark"
+                        android:paddingLeft="20dp" />
+        </LinearLayout>
+</ScrollView>
+</merge>
