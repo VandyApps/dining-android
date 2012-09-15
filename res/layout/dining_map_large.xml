@@ -8,6 +8,6 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
 	    android:clickable="true"
-	    android:apiKey="Your Maps API Key goes here"
-	/>
+	    android:apiKey="0M2aqKPgFbfDjpVUyNNTw9CLOCYJcEE_5oXarfg" 
+	/> <!--  This is my personal maps API key. You need to register your own for it to work with your builds -->
 </LinearLayout>

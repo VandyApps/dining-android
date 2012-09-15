@@ -1,8 +1,7 @@
 <resources>
 
-    <string name="app_name">VanderbiltDining</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">VandyDining</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_dining_list_view">DiningListView</string>
+    <string name="title_activity_dining_list_view">VandyDining</string>
 
 </resources>
