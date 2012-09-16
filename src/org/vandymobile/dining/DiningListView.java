@@ -19,9 +19,9 @@ public class DiningListView extends Activity {
         getMenuInflater().inflate(R.menu.activity_dining_list_view, menu);
         return true;
     }
-    
+
     public void testClick(View v){
-    	Intent _int = new Intent(getApplicationContext(), DiningMap.class);
-    	startActivity(_int);
+        Intent _int = new Intent(getApplicationContext(), DiningMap.class);
+        startActivity(_int);
     }
 }

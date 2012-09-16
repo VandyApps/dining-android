@@ -1,6 +1,9 @@
 package org.vandymobile.dining;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,6 +17,12 @@ public class DiningMap extends MapActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dining_map_large);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
+        MapView this_map = (MapView) findViewById(R.id.mapview);
+        this_map.setBuiltInZoomControls(true);
+        MapController _mapViewController = this_map.getController();
+        GeoPoint _geoPoint = new GeoPoint(36143091, -86804699); //This is roughly the center of Vanderbilt
+        _mapViewController.animateTo(_geoPoint);
+        _mapViewController.setZoom(17);
     }
 
     @Override
@@ -33,10 +42,10 @@ public class DiningMap extends MapActivity {
         return super.onOptionsItemSelected(item);
     }
 
-	@Override
-	protected boolean isRouteDisplayed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    protected boolean isRouteDisplayed() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
 }
