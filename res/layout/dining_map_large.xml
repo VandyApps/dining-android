@@ -3,11 +3,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
         
-	<com.google.android.maps.MapView
-	    android:id="@+id/mapview"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:clickable="true"
-	    android:apiKey="0M2aqKPgFbfDjpVUyNNTw9CLOCYJcEE_5oXarfg" 
-	/> <!--  This is my personal maps API key. You need to register your own for it to work with your builds -->
+    <com.google.android.maps.MapView
+        android:id="@+id/mapview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:clickable="true"
+        android:apiKey="0M2aqKPgFbfDjpVUyNNTw9CLOCYJcEE_5oXarfg" 
+    /> <!--  This is my personal maps API key. You need to register your own for it to work with your builds -->
 </LinearLayout>
