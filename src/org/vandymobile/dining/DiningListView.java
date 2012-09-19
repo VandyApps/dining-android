@@ -1,8 +1,11 @@
 package org.vandymobile.dining;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +26,21 @@ public class DiningListView extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dining_list_view);
+        
+        
+        DatabaseHelper myDbHelper = new DatabaseHelper(this);
+         
+        try {
+        	myDbHelper.createDataBase();
+        } catch (IOException ioe) {
+        	throw new Error("Unable to create database");
+        }
+         
+        try {
+        	myDbHelper.openDataBase();
+        } catch(SQLException sqle) {
+        	throw sqle;
+        }
         
         setListAdapter(new IconicAdapter(this));
     }
