@@ -127,6 +127,8 @@ public class DiningMap extends MapActivity {
 
             Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.location); //temporary drawable for our current location
             canvas.drawBitmap(bmp, cur.x, cur.y, my_paint);
+            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pushpin);
+            canvas.drawBitmap(bmp, cur.x+50, cur.y+50, my_paint);
             return true;
         }
     }
