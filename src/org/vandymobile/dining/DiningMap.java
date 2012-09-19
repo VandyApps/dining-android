@@ -3,6 +3,7 @@ package org.vandymobile.dining;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,6 +16,8 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -51,12 +54,33 @@ public class DiningMap extends MapActivity {
         _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);//get current GPS location into a listener
         
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (x == null){
+        	x = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+        if (x == null){
+        	x = _locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        }
         if (x != null){
             p = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
         } else {
+        	Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
             p = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
+    }
+    
+    public void homeClick(View v){
+        Intent _int = new Intent(getApplicationContext(), DiningListView.class);
+        startActivity(_int);
+    }
+    public void mapsClick(View v){
+        //nothing here
+    }
+    public void menuClick(View v){
+    	//TODO implement this
+    }
+    public void happyClick(View v){
+    	//TODO implement this
     }
 
     @Override

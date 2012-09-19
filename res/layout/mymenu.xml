@@ -1,0 +1,148 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:gravity="center|center_vertical"
+    android:orientation="horizontal" 
+    android:background="#000000" >
+    
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center_horizontal" >
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="70dp"
+                android:layout_height="70dp">
+	            <ImageView
+	                android:id="@+id/mymenu_img1"
+	                android:layout_width="70dp"
+	                android:layout_height="70dp"
+	                android:layout_marginLeft="1dp"
+	                android:clickable="true"
+	                android:src="@drawable/home" 
+	                android:onClick="homeClick" />
+                <TextView android:id="@+id/mymenu_text1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/mymenu_img1"
+                    android:layout_alignTop="@+id/mymenu_img1"
+                    android:layout_alignRight="@+id/mymenu_img1"
+                    android:layout_alignBottom="@+id/mymenu_img1"
+                    android:layout_margin="1dp"
+                    android:gravity="center"
+                    android:background="#00000000"
+                    android:textColor="@android:color/black"
+                    android:textSize="14dp"
+                    android:enabled="false" />
+            </RelativeLayout>
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="70dp"
+                android:layout_height="70dp">
+                <ImageView
+                    android:id="@+id/mymenu_img2"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginLeft="1dp"
+                    android:clickable="true"
+                    android:src="@drawable/maps" 
+                    android:onClick="mapsClick" />
+	            <TextView
+	                android:id="@+id/mymenu_text2"
+	                android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/mymenu_img2"
+                    android:layout_alignTop="@+id/mymenu_img2"
+                    android:layout_alignRight="@+id/mymenu_img2"
+                    android:layout_alignBottom="@+id/mymenu_img2"
+                    android:layout_margin="1dp"
+                    android:gravity="center_vertical|center"
+                    android:background="#00000000"
+                    android:textColor="@android:color/black"
+                    android:textSize="14dp"
+	                android:enabled="false" />
+	        </RelativeLayout>
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="70dp"
+                android:layout_height="70dp">
+	            <ImageView
+	                android:id="@+id/mymenu_img3"
+	                android:layout_width="70dp"
+	                android:layout_height="70dp"
+	                android:layout_marginLeft="1dp"
+	                android:clickable="true"
+                    android:src="@drawable/notes" 
+                    android:onClick="menuClick" />
+                <TextView android:id="@+id/mymenu_text3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/mymenu_img3"
+                    android:layout_alignTop="@+id/mymenu_img3"
+                    android:layout_alignRight="@+id/mymenu_img3"
+                    android:layout_alignBottom="@+id/mymenu_img3"
+                    android:layout_margin="1dp"
+                    android:gravity="center"
+                    android:background="#00000000"
+                    android:textColor="@android:color/black"
+                    android:textSize="14dp"
+                    android:enabled="false" />
+                </RelativeLayout>
+			<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			    android:layout_width="70dp"
+			    android:layout_height="70dp">
+                <ImageView
+                    android:id="@+id/mymenu_img4"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginLeft="1dp"
+                    android:clickable="true"
+                    android:src="@drawable/happy" 
+                    android:onClick="happyClick" />
+                <TextView android:id="@+id/mymenu_text4"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:layout_alignLeft="@+id/mymenu_img4"
+				    android:layout_alignTop="@+id/mymenu_img4"
+				    android:layout_alignRight="@+id/mymenu_img4"
+				    android:layout_alignBottom="@+id/mymenu_img4"
+				    android:layout_margin="1dp"
+				    android:gravity="center"
+					android:background="#00000000"
+					android:textColor="@android:color/black"
+					android:textSize="14dp"
+					android:enabled="false" />
+	        </RelativeLayout>
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="70dp"
+                android:layout_height="70dp">
+                <ImageView
+                    android:id="@+id/mymenu_img5"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginLeft="1dp"
+                    android:clickable="true" 
+                    android:src="@drawable/calendar" />
+                <TextView
+                    android:id="@+id/mymenu_text5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/mymenu_img5"
+                    android:layout_alignTop="@+id/mymenu_img5"
+                    android:layout_alignRight="@+id/mymenu_img5"
+                    android:layout_alignBottom="@+id/mymenu_img5"
+                    android:layout_margin="1dp"
+                    android:gravity="center"
+                    android:background="#00000000"
+                    android:textColor="@android:color/black"
+                    android:textSize="14dp"
+                    android:enabled="false" />
+            </RelativeLayout>
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>
