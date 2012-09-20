@@ -55,16 +55,16 @@ public class DiningMap extends MapActivity {
         
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (x == null){
-        	x = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            x = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
         if (x == null){
-        	x = _locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            x = _locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         }
         if (x != null){
             p = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
         } else {
-        	Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
             p = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
     }
@@ -77,10 +77,10 @@ public class DiningMap extends MapActivity {
         //nothing here
     }
     public void menuClick(View v){
-    	//TODO implement this
+        //TODO implement this
     }
     public void happyClick(View v){
-    	//TODO implement this
+        //TODO implement this
     }
 
     @Override

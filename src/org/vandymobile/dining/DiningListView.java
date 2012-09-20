@@ -1,11 +1,15 @@
 package org.vandymobile.dining;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,11 +20,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class DiningListView extends ListActivity {
-    private static String[] _temp = {"Campus Store","Commons","C.T. West","Last Drop","Quiznos","Rand","Rotiki","Varsity Marketplace"};
-	public static class ViewHolder {
-		public TextView tvTitle, tvDesc, tvDist;
-		private ImageView imgView;
-		}
+    public static class ViewHolder {
+        public TextView tvTitle, tvDesc, tvDist;
+        private ImageView imgView;
+        }
+    private static DatabaseHelper myDbHelper;
+    private static SQLiteDatabase diningDatabase;
+    private String[] adapterInput;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -28,19 +34,25 @@ public class DiningListView extends ListActivity {
         setContentView(R.layout.activity_dining_list_view);
         
         
-        DatabaseHelper myDbHelper = new DatabaseHelper(this);
+        myDbHelper = new DatabaseHelper(this);
          
         try {
-        	myDbHelper.createDataBase();
+            myDbHelper.createDataBase();
         } catch (IOException ioe) {
-        	throw new Error("Unable to create database");
+            throw new Error("Unable to create database");
         }
          
         try {
-        	myDbHelper.openDataBase();
+            myDbHelper.openDataBase();
         } catch(SQLException sqle) {
-        	throw sqle;
+            throw sqle;
         }
+        diningDatabase = myDbHelper.getReadableDatabase();
+        
+        String[] tmp2 = {"_id"};
+        Cursor adapterCursor = diningDatabase.query("dining", tmp2, null, null, null, null, null);
+        adapterInput = new String[adapterCursor.getCount()];
+        adapterCursor.close();
         
         setListAdapter(new IconicAdapter(this));
     }
@@ -69,8 +81,8 @@ public class DiningListView extends ListActivity {
     class IconicAdapter extends ArrayAdapter<String> { 
         Activity context;
 
-        IconicAdapter(Activity context) { 
-            super(context, R.layout.row, _temp);
+        IconicAdapter(Activity context) {
+            super(context, R.layout.row, adapterInput);
             this.context=context; 
             }
 
@@ -89,17 +101,21 @@ public class DiningListView extends ListActivity {
             else {
                   holder = (ViewHolder) convertView.getTag();
               }
-
-            /*TextView label=(TextView)row.findViewById(R.id.label);
-            label.setText(items[position]);
-            if (items[position].length()>4) { 
-                ImageView icon=(ImageView)row.findViewById(R.id.icon);
-                icon.setImageResource(R.drawable.ic_launcher); 
-            }*/
-            holder.tvTitle.setText(_temp[position]);
-            holder.tvDesc.setText("Open for 15 more minutes!");
-            holder.tvDist.setText("0.2mi away");
-            holder.imgView.setImageResource(R.drawable.compass);
+            
+            String[] tmp = {"name"};
+            Cursor _cur = diningDatabase.query("dining", tmp, null, null, null, null, "name");
+            
+            String tempName = "this is a default value";
+            
+            _cur.moveToFirst();//initialize the cursor
+            _cur.move(position);
+            tempName = _cur.getString(0); //grab the name value for the current row
+            _cur.close();
+            
+            holder.tvTitle.setText(tempName);
+            holder.tvDesc.setText("Open for 15 more minutes!");//TODO fix temp value
+            holder.tvDist.setText("0.2mi away"); //TODO fix temp value
+            holder.imgView.setImageResource(R.drawable.compass); //TODO fix temp value
 
             return(convertView);         
         }
