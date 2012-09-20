@@ -1,8 +1,7 @@
 package org.vandymobile.dining;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -17,13 +16,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class DiningListView extends ListActivity {
     public static class ViewHolder {
         public TextView tvTitle, tvDesc, tvDist;
         private ImageView imgView;
         }
+    public static Integer[] RestaurantMap = {24,25,26,7,27,28,29,4,30,3,31,11,12,23,32,22,5,18,33,34,17,35,36,37,38,39,40,9,8,1,10,41,42,43,44,45,46,15,16,14,47,2,6,13,19,21,20,48,49,50};
     private static DatabaseHelper myDbHelper;
     private static SQLiteDatabase diningDatabase;
     private String[] adapterInput;
@@ -61,6 +63,16 @@ public class DiningListView extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_dining_list_view, menu);
         return true;
+    }
+    
+    public void onListItemClick(ListView parent, View v, int position, long id) { 
+        startRestaurantDetails(position, id);
+    }
+    
+    public void startRestaurantDetails(int position, long id){
+        Toast.makeText(getApplicationContext(), "["+position+"]:["+id+"]", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getApplicationContext(), LocationDetails.class).putExtra("id", id);
+        startActivity(intent);
     }
 
     public void homeClick(View v){

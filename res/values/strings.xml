@@ -4,5 +4,6 @@
     <string name="menu_settings">Settings</string>
     <string name="title_activity_dining_list_view">VandyDining</string>
     <string name="title_activity_dining_map">DiningMap</string>
+    <string name="title_activity_location_details">LocationDetails</string>
 
 </resources>
