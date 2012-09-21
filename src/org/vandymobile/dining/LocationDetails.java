@@ -71,26 +71,32 @@ public class LocationDetails extends Activity {
                 	//something broke. 
                 }
                 if (newhours != null){
-                	updateRangeText(curHoursDisplay, newhours, 1);
+                	updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
                 }
                 
                 
             }
         });
-        /*((ImageView) findViewById(R.restaurantDetails.leftArrow))
-                        .setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                        Log.i("test", "onclick");
-                                        if (--curHours[1] < 0 || curHours[1] == -1) {
-                                                curHours[0] = (curHours[0] - Calendar.SUNDAY + 7 - 1)
-                                                                % 7 + Calendar.SUNDAY;
-                                                curHours[1] = restaurant.getHours()
-                                                                .getRangesToModify(curHours[0]).size() - 1;
-                                        }
-
-                                        updateRangeText();
-                                }
-                        });*/
+        ((ImageView) findViewById(R.restaurantDetails.leftArrow)).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                curHoursDisplay = (curHoursDisplay-1);
+                if (curHoursDisplay < 1){
+                	curHoursDisplay = curHoursDisplay + 7;
+                }
+                Hours = getHours(curHoursDisplay);
+                String[] newhours = null;
+                if (Hours.moveToFirst()){
+                	newhours = parseHours(Hours.getString(0));
+                } else {
+                	//something broke. 
+                }
+                if (newhours != null){
+                	updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
+                }
+                
+                
+            }
+        });
 
         
     }
