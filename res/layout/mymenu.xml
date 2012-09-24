@@ -4,7 +4,7 @@
     android:layout_gravity="bottom"
     android:gravity="center|center_vertical"
     android:orientation="horizontal" 
-    android:background="#000000" >
+    android:background="#D6AD38" >
     
     <TableLayout
         android:layout_width="fill_parent"

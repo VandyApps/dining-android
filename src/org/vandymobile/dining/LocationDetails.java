@@ -16,7 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class LocationDetails extends Activity {
-
+    
     private TextView day;
     private TextView range;
     private static int today = new GregorianCalendar().get(Calendar.DAY_OF_WEEK);
@@ -52,26 +52,26 @@ public class LocationDetails extends Activity {
         day = (TextView) findViewById(R.restaurantDetails.hoursDay);
         range = (TextView) findViewById(R.restaurantDetails.hoursRangeDisplay);
         if (Hours.moveToFirst()){
-        	updateRangeText(today, parseHours(Hours.getString(0)), 1);
+            updateRangeText(today, parseHours(Hours.getString(0)), 1);
         } else {
-        	//something broke.
+            //something broke.
         }
         Toast.makeText(getApplicationContext(), "TODAY IS ["+getCurrentDay(today)+"]", Toast.LENGTH_SHORT).show();
         ((ImageView) findViewById(R.restaurantDetails.rightArrow)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 curHoursDisplay = (curHoursDisplay+1);
                 if (curHoursDisplay > 7){
-                	curHoursDisplay = curHoursDisplay - 7;
+                    curHoursDisplay = curHoursDisplay - 7;
                 }
                 Hours = getHours(curHoursDisplay);
                 String[] newhours = null;
                 if (Hours.moveToFirst()){
-                	newhours = parseHours(Hours.getString(0));
+                    newhours = parseHours(Hours.getString(0));
                 } else {
-                	//something broke. 
+                    //something broke. 
                 }
                 if (newhours != null){
-                	updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
+                    updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
                 }
                 
                 
@@ -81,20 +81,18 @@ public class LocationDetails extends Activity {
             public void onClick(View v) {
                 curHoursDisplay = (curHoursDisplay-1);
                 if (curHoursDisplay < 1){
-                	curHoursDisplay = curHoursDisplay + 7;
+                    curHoursDisplay = curHoursDisplay + 7;
                 }
                 Hours = getHours(curHoursDisplay);
                 String[] newhours = null;
                 if (Hours.moveToFirst()){
-                	newhours = parseHours(Hours.getString(0));
+                    newhours = parseHours(Hours.getString(0));
                 } else {
-                	//something broke. 
+                    //something broke. 
                 }
                 if (newhours != null){
-                	updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
+                    updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
                 }
-                
-                
             }
         });
 
@@ -107,9 +105,9 @@ public class LocationDetails extends Activity {
             range.setText("closed");
         } else {
             if (pos == 1){
-            	range.setText(newhours[1]+" - "+newhours[2]);
+                range.setText(newhours[1]+" - "+newhours[2]);
             } else if (pos == 2) {
-            	range.setText(newhours[3]+" - "+newhours[4]);
+                range.setText(newhours[3]+" - "+newhours[4]);
             }
         }
     }
@@ -164,24 +162,24 @@ public class LocationDetails extends Activity {
     }
     public String[] parseHours(String _in){
         String[] ret = {null,null,null,null};
-    	if (_in == "null"){
-        	return ret;
+        if (_in == "null"){
+            return ret;
         }
         for (int i = 0; i < _in.length(); i++){
             if (_in.charAt(i)== ','){
                 ret[1]=_in.substring(0, i);//once you reach the first comma, break off the first start hour into ret[1]
                 for (int x = i; x < _in.length();x++){
                     if (_in.charAt(x) == ';'){//if you hit a semicolon, there are two start and end times today. 
-                    	                      //Don't worry, we'll use recursion!
-                    	ret[2] = _in.substring(i+1,x);
-                    	String[] tmp2 = parseHours(_in.substring(x+1));
-                    	ret[3] = tmp2[1]; ret[4] = tmp2[2];
-                    	break;
+                                              //Don't worry, we'll use recursion!
+                        ret[2] = _in.substring(i+1,x);
+                        String[] tmp2 = parseHours(_in.substring(x+1));
+                        ret[3] = tmp2[1]; ret[4] = tmp2[2];
+                        break;
                     } else if (x == _in.length() -1){//if you hit the end of the string and haven't found a semicolon, don't worry! 
-                    								 //there are only one set of hours for today.
-                    	
-                    	ret[2] = _in.substring(i+1);//grab the second hour string into ret[2] - 
-                    						//don't worry about ret[3] and ret[4], we'll check for null later
+                                                     //there are only one set of hours for today.
+                        
+                        ret[2] = _in.substring(i+1);//grab the second hour string into ret[2] - 
+                                            //don't worry about ret[3] and ret[4], we'll check for null later
                     }
                 }
                 break;
