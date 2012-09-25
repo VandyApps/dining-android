@@ -11,8 +11,34 @@
         android:clickable="true"
         android:layout_above="@+id/footer"
         android:apiKey="0M2aqKPgFbfDjpVUyNNTw9CLOCYJcEE_5oXarfg" 
-        /> <!--  This is my personal maps API key. You need to register your own for it to work with your builds -->
+        > <!--  This is my personal maps API key. You need to register your own for it to work with your builds -->
     
+                <RelativeLayout
+                        android:id="@+map/popup"
+                android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="9dp"
+                        android:background="@drawable/map_popup_box"
+                        android:visibility="gone">
+                        <!-- <ImageView android:id="@+map/icon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:maxHeight="15dp"
+                                android:maxWidth="15dp"/> -->
+                        <TextView android:id="@+map/title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18dp"
+                                android:textColor="@android:color/primary_text_light" />
+                        <TextView android:id="@+map/specialText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@android:color/secondary_text_light"
+                                android:layout_below="@map/title" />
+                </RelativeLayout>
+    
+    </com.google.android.maps.MapView>
     <include android:id="@+id/footer" android:layout_height="60dp"
         layout="@layout/mymenu" android:layout_width="fill_parent"
         android:layout_centerHorizontal="true"

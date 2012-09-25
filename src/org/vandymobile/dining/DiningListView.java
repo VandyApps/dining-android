@@ -2,6 +2,7 @@ package org.vandymobile.dining;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -13,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -36,12 +38,19 @@ public class DiningListView extends ListActivity {
     private String[] adapterInput;
     public static Cursor locCursor;
     private GeoPoint curLoc = null;
+    int curHour;
+    int curMin;
+    int curDay;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dining_list_view);
-        
+        Time now = new Time();
+        now.setToNow();
+        curHour = now.hour;
+        curMin = now.minute;
+        curDay = now.weekDay + 1;// to match up with the Calendar class' day numbering scheme
         
         myDbHelper = new DatabaseHelper(this);
          
@@ -90,7 +99,7 @@ public class DiningListView extends ListActivity {
         return true;
     }
     
-    public void onListItemClick(ListView parent, View v, int position, long id) { 
+    public void onListItemClick(ListView parent, View v, int position, long id) {
         startRestaurantDetails(position, id);
     }
     
@@ -133,13 +142,77 @@ public class DiningListView extends ListActivity {
     return Double.valueOf(twoDForm.format(d));
 }
     
+    private Cursor getHours(int i, SQLiteDatabase _db, int id){
+        switch (i){
+            case Calendar.SUNDAY:
+                String[] tmp = {"sunday_hours"};
+                return _db.query("dining", tmp, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.MONDAY:
+                String[] tmp1 = {"monday_hours"};
+                return _db.query("dining", tmp1, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.TUESDAY:
+                String[] tmp2 = {"tuesday_hours"};
+                return _db.query("dining", tmp2, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.WEDNESDAY:
+                String[] tmp3 = {"wednesday_hours"};
+                return _db.query("dining", tmp3, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.THURSDAY:
+                String[] tmp4 = {"thursday_hours"};
+                return _db.query("dining", tmp4, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.FRIDAY:
+                String[] tmp5 = {"friday_hours"};
+                return _db.query("dining", tmp5, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            case Calendar.SATURDAY:
+                String[] tmp6 = {"saturday_hours"};
+                return _db.query("dining", tmp6, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
+            default:
+                return null;
+        }
+    }
+    private String[] parseHours(String _in){
+        String[] ret = {null,null,null,null};
+        if (_in == "null"){
+            return ret;
+        }
+        for (int i = 0; i < _in.length(); i++){
+            if (_in.charAt(i)== ','){
+                ret[0]= _in.substring(0, i);//once you reach the first comma, break off the first start hour into ret[0]
+                for (int x = i; x < _in.length();x++){
+                    if (_in.charAt(x) == ';'){//if you hit a semicolon, there are two start and end times today. 
+                                              //Don't worry, we'll use recursion!
+                        ret[1] = _in.substring(i+1,x);
+                        String[] tmp2 = parseHours(_in.substring(x+1));
+                        ret[2] = tmp2[0]; ret[3] = tmp2[1];
+                        break;
+                    } else if (x == _in.length() -1){//if you hit the end of the string and haven't found a semicolon, don't worry! 
+                                                     //there are only one set of hours for today.
+
+                        ret[1] = _in.substring(i+1);//grab the second hour string into ret[2] - 
+                                                                    //don't worry about ret[3] and ret[4], we'll check for null later
+                    }
+                }
+                break;
+            }
+        }
+        
+        return ret;
+    }
+    
+    private String isOpen(String[] hours){
+    	//TODO implement this
+    	return "Closed";
+    }
+    
     
     class IconicAdapter extends ArrayAdapter<String> { 
         Activity context;
+        private Cursor nameCursor;
         
         IconicAdapter(Activity context) {
             super(context, R.layout.row, adapterInput);
             this.context=context; 
+            String[] tmp = {"name","type"};
+            nameCursor = diningDatabase.query("dining", tmp, null, null, null, null, "name");
             }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -182,24 +255,28 @@ public class DiningListView extends ListActivity {
                     holder = (ViewHolder) convertView.getTag();
                 }
             }
-            String[] tmp = {"name","type"};
-            Cursor _cur = diningDatabase.query("dining", tmp, null, null, null, null, "name");
+
+            
+            String[] tempHours;
+            Cursor hoursCursor = getHours(curDay, diningDatabase, position);
+            hoursCursor.moveToFirst();//initialize the cursor
+            tempHours = parseHours(hoursCursor.getString(0));
+            hoursCursor.close();
             
             String tempName = "this is a default value";
-            
-            _cur.moveToFirst();//initialize the cursor
-            _cur.move(position);
-            tempName = _cur.getString(0); //grab the name value for the current row
-            String description = _cur.getString(1);
-            _cur.close();
+            nameCursor.moveToFirst();//initialize the cursor
+            nameCursor.move(position);
+            tempName = nameCursor.getString(0); //grab the name value for the current row
+            String description = nameCursor.getString(1);
+
             if (locCursor.moveToPosition(position)){
                 GeoPoint thisLocation = new GeoPoint((int)(locCursor.getFloat(0)*1000000), (int)(locCursor.getFloat(1)*1000000));
                 holder.tvDist.setText(roundDouble(getDistance(thisLocation, curLoc))+" mi away");
             }
             
             holder.tvTitle.setText(tempName);
-            holder.tvStatus.setText("Open for 15 minutes!");//TODO fix temp value
-            holder.tvDesc.setText(description); //TODO fix temp value
+            holder.tvStatus.setText(isOpen(tempHours));
+            holder.tvDesc.setText(description); 
             holder.imgView.setImageResource(R.drawable.compass); //TODO fix temp value
 
             return(convertView);         
