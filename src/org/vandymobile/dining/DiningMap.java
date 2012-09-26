@@ -56,9 +56,6 @@ public class DiningMap extends MapActivity {
         _mapViewController.animateTo(_geoPoint);
         _mapViewController.setZoom(17); //center map on this point, zoomed to fit
         
-        myLocationOverlay = new MyLocationOverlay();
-        myMap.getOverlays().add(myLocationOverlay); //this is an overlay which contains an image for our current location
-
         _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         _locationListener = new MyLocationListener();
         _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);//get current GPS location into a listener
@@ -73,6 +70,9 @@ public class DiningMap extends MapActivity {
         if (x != null){
             p = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
+            myLocationOverlay = new MyLocationOverlay();
+            myMap.getOverlays().add(myLocationOverlay); //this is an overlay which contains an image for our current location
+            //This overlay is only drawn if we successfully retrieved the location of the user. 
         } else {
             Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
             p = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
@@ -102,7 +102,7 @@ public class DiningMap extends MapActivity {
         startActivity(_int);
     }
     public void mapsClick(View v){
-        //nothing here
+        // Already at map - do nothing
     }
     public void menuClick(View v){
         //TODO implement this
@@ -149,33 +149,6 @@ public class DiningMap extends MapActivity {
 
             Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.location); //temporary drawable for our current location
             canvas.drawBitmap(bmp, cur.x, cur.y, my_paint);
-            
-            
-            
-            /*String[] tmp = {"lat", "long", "name"};
-            Cursor locName = diningDatabase.query("dining", tmp, null, null, null, null, "name");
-            locName.moveToFirst();
-            Point[] pins = new Point[50];
-            for (int i = 0; i < 50; i++){
-                bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pushpin);
-                pins[i] = mapView.getProjection().toPixels(new GeoPoint((int)locName.getFloat(0)*1000000,(int)locName.getFloat(1)*1000000),null);
-                locName.moveToNext();
-            }
-            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pushpin);
-            GeoPoint p2 = new GeoPoint(36143095, -86804699);
-            GeoPoint p3 = new GeoPoint(36143100, -86804699);
-            Point pp2 = mapView.getProjection().toPixels(p2, null);
-            Point pp3 = mapView.getProjection().toPixels(p3, null);
-            
-            canvas.drawBitmap(bmp, pins[0].x, pins[0].y, my_paint);
-            canvas.drawBitmap(bmp, pins[1].x, pins[1].y, my_paint);
-            canvas.drawBitmap(bmp, pins[2].x, pins[2].y, my_paint);
-            canvas.drawBitmap(bmp, pins[3].x, pins[3].y, my_paint);
-            canvas.drawBitmap(bmp, pins[4].x, pins[4].y, my_paint);
-            canvas.drawBitmap(bmp, pp2.x, pp2.y, my_paint);
-            canvas.drawBitmap(bmp, pp3.x, pp3.y, my_paint);
-            
-            locName.close();*/  //commented out because this should be not needed - will see after further testing
             
             return true;
         }

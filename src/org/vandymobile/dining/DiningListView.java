@@ -38,18 +38,16 @@ public class DiningListView extends ListActivity {
     private String[] adapterInput;
     public static Cursor locCursor;
     private GeoPoint curLoc = null;
-    int curHour;
-    int curMin;
+    private Time now;
     int curDay;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dining_list_view);
-        Time now = new Time();
+        now = new Time();
         now.setToNow();
-        curHour = now.hour;
-        curMin = now.minute;
+
         curDay = now.weekDay + 1;// to match up with the Calendar class' day numbering scheme
         
         myDbHelper = new DatabaseHelper(this);
@@ -104,13 +102,13 @@ public class DiningListView extends ListActivity {
     }
     
     public void startRestaurantDetails(int position, long id){
-        Toast.makeText(getApplicationContext(), "["+position+"]:["+id+"]", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "["+position+"]:["+id+"]", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getApplicationContext(), LocationDetails.class).putExtra("id", id);
         startActivity(intent);
     }
 
     public void homeClick(View v){
-        //nothing here
+        // Already at home - do nothing
     }
     public void mapsClick(View v){
         Intent _int = new Intent(getApplicationContext(), DiningMap.class);
@@ -197,10 +195,99 @@ public class DiningListView extends ListActivity {
         
         return ret;
     }
+    /*
+     * 
+     */
+    private Time calcTime(String sTime, Time cur){
+        //TODO: make this function actually figure out which day it should be (possible?)
+        
+        // *****************************************************************************************************************
+        // BE CAREFUL USING THIS METHOD. Currently it assumes that any time which is before 5:00am is a closing time and 
+        //         occurs on the following day (if the current time is after 5:00am)
+        // *****************************************************************************************************************
+            // (e.g. if it is currently 11pm and Sam's Sports Bar closes at 3am today, 
+                    //the Time object returned will be referencing tomorrow's date)
+        
+        Time iTime = new Time(Time.getCurrentTimezone());
+        Integer hour = null;
+        Integer minute = null;
+        for (int i = 0; i < sTime.length(); i++){
+            if (sTime.charAt(i)==':'){
+                hour = Integer.parseInt(sTime.substring(0, i));
+                minute = Integer.parseInt(sTime.substring(i+1));
+                break;
+            }
+        }
+        if (hour <= 4){ //if the hour time is before 5am...
+            if (cur.hour <= 4){// ...and the current time is also, assume it is for today
+                iTime.set(0, minute, hour, cur.monthDay, cur.month, cur.year);
+            } else { // ...and the current time is after 5am, assume it is for tomorrow
+                iTime.set(0, minute, hour, cur.monthDay+1, cur.month, cur.year);
+            }
+        } else {// if time is after 5am, assume it is for today
+            iTime.set(0, minute, hour, cur.monthDay, cur.month, cur.year);
+        }
+        iTime.normalize(true); //fix the object if, for example, adding 1 to the monthDay made it December 32 or April 31.
+        return iTime;
+    }
     
-    private String isOpen(String[] hours){
-    	//TODO implement this
-    	return "Closed";
+    /*
+     * 
+     */
+    private String isOpen(String[] hours, Time cur){
+        if (hours[0].equals(hours[1]) && hours[0].equals("7:00")){
+            return "Open 24/7!";
+        }
+        
+        boolean isSimple = (hours[2] == null); // this will determine if the restaurant has more than one opening/closing time today
+        Time firstOpen = calcTime(hours[0], cur);
+        Time firstClose = calcTime(hours[1], cur);
+        
+        Time secondOpen = null;
+        Time secondClose = null;
+        if (!isSimple){
+            secondOpen = calcTime(hours[2], cur);
+            secondClose = calcTime(hours[3], cur);
+        }
+
+        Time temp = new Time(Time.getCurrentTimezone());
+        temp.set(cur.second, cur.minute+30, cur.hour, cur.monthDay, cur.month, cur.year); // set to 30 minutes in the future
+        temp.normalize(false); //this temp var will be used to check for things which are opening or closing soon
+        
+        if (firstOpen.after(cur)){
+            if (firstOpen.after(temp)){
+                return "Closed";
+            } else {
+                return "Opening in " + ((firstOpen.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+            }
+        } else if ((firstOpen.before(cur)) && (firstClose.after(cur))){
+            if (firstClose.after(temp)){
+                return "Open!";
+            } else {
+                return "Closing in " + ((firstClose.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+            }
+        } else if (firstClose.before(cur)){
+            if (isSimple){
+                return "Closed";
+            } else {
+                if (secondOpen.after(cur)){
+                    if (secondOpen.after(temp)){
+                        return "Closed";
+                    } else {
+                        return "Opening in " + ((secondOpen.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                    }
+                } else if ((secondOpen.before(cur)) && (secondClose.after(cur))){
+                    if (secondClose.after(temp)){
+                        return "Open!";
+                    } else {
+                        return "Closing in " + ((secondClose.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                    }
+                } else if (secondClose.before(cur)){
+                    return "Closed";
+                }
+            }
+        } 
+        return "Invalid hours input";
     }
     
     
@@ -227,7 +314,6 @@ public class DiningListView extends ListActivity {
                 holder.tvStatus = (TextView) convertView.findViewById(R.id.tvstatus);
                 holder.imgView = (ImageView) convertView.findViewById(R.id.image);
                 convertView.setTag(holder);
-                Toast.makeText(getApplicationContext(), convertView.getId()+"", Toast.LENGTH_SHORT).show();
             } else {
                 if (convertView == null) {
                     LayoutInflater inflater=context.getLayoutInflater();
@@ -258,7 +344,12 @@ public class DiningListView extends ListActivity {
 
             
             String[] tempHours;
-            Cursor hoursCursor = getHours(curDay, diningDatabase, position);
+            int hoursDay = curDay;
+            if (now.hour <= 4){ //this getHours call assumes that if it is before 5am you want the hours for YESTERDAY
+                                //e.g. if it is 1:00am on a Tuesday, you want to look at Monday's hours for locations
+                hoursDay--;
+            } 
+            Cursor hoursCursor = getHours(hoursDay, diningDatabase, position);
             hoursCursor.moveToFirst();//initialize the cursor
             tempHours = parseHours(hoursCursor.getString(0));
             hoursCursor.close();
@@ -275,7 +366,7 @@ public class DiningListView extends ListActivity {
             }
             
             holder.tvTitle.setText(tempName);
-            holder.tvStatus.setText(isOpen(tempHours));
+            holder.tvStatus.setText(isOpen(tempHours, now));
             holder.tvDesc.setText(description); 
             holder.imgView.setImageResource(R.drawable.compass); //TODO fix temp value
 
