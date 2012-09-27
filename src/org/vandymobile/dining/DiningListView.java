@@ -258,13 +258,13 @@ public class DiningListView extends ListActivity {
             if (firstOpen.after(temp)){
                 return "Closed";
             } else {
-                return "Opening in " + ((firstOpen.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                return "Opening in " + ((firstOpen.toMillis(false) - cur.toMillis(false))/60000 ) + " minutes!";
             }
         } else if ((firstOpen.before(cur)) && (firstClose.after(cur))){
             if (firstClose.after(temp)){
                 return "Open!";
             } else {
-                return "Closing in " + ((firstClose.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                return "Closing in " + ((firstClose.toMillis(false) - cur.toMillis(false))/60000 ) + " minutes!";
             }
         } else if (firstClose.before(cur)){
             if (isSimple){
@@ -274,13 +274,13 @@ public class DiningListView extends ListActivity {
                     if (secondOpen.after(temp)){
                         return "Closed";
                     } else {
-                        return "Opening in " + ((secondOpen.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                        return "Opening in " + ((secondOpen.toMillis(false) - cur.toMillis(false))/60000 ) + " minutes!";
                     }
                 } else if ((secondOpen.before(cur)) && (secondClose.after(cur))){
                     if (secondClose.after(temp)){
                         return "Open!";
                     } else {
-                        return "Closing in " + ((secondClose.toMillis(false) - cur.toMillis(false))*60000 ) + " minutes!";
+                        return "Closing in " + ((secondClose.toMillis(false) - cur.toMillis(false))/60000 ) + " minutes!";
                     }
                 } else if (secondClose.before(cur)){
                     return "Closed";
@@ -348,7 +348,7 @@ public class DiningListView extends ListActivity {
             if (now.hour <= 4){ //this getHours call assumes that if it is before 5am you want the hours for YESTERDAY
                                 //e.g. if it is 1:00am on a Tuesday, you want to look at Monday's hours for locations
                 hoursDay--;
-            } 
+            }
             Cursor hoursCursor = getHours(hoursDay, diningDatabase, position);
             hoursCursor.moveToFirst();//initialize the cursor
             tempHours = parseHours(hoursCursor.getString(0));
