@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/menu_page_ll"
+    android:background="@drawable/list_bg"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:id="@+id/meal_title"
+        android:textSize="30dp" android:layout_gravity="center"
+        android:textColor="@android:color/primary_text_light"
+        android:text="Lunch!" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:textSize="20dp"
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/primary_text_light"
+        android:text="Grill" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15dp" 
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/secondary_text_light"
+        android:text="Burger, Grilled Chicken, Baked Potato, Fries, Onion Rings" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:textSize="20dp"
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/primary_text_light"
+        android:text="Pizza" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15dp" 
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/secondary_text_light"
+        android:text="Cheese, Pepperoni, BBQ Chicken" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:textSize="20dp"
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/primary_text_light"
+        android:text="The Wok" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:textSize="15dp" 
+        android:paddingLeft="5dp"
+        android:textColor="@android:color/secondary_text_light"
+        android:text="Orange Chicken, White Rice, Brown Rice" />
+
+</LinearLayout>

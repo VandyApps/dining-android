@@ -4,27 +4,37 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * @author Matthew Lavin
+ */
+
 public class LocationDetails extends Activity {
     
-    private TextView day;
-    private TextView range;
+    private TextView mDay;
+    private TextView mRange;
     private static int today = new GregorianCalendar().get(Calendar.DAY_OF_WEEK);
     private int curHoursDisplay;
     private static DatabaseHelper myDbHelper;
     private static SQLiteDatabase diningDatabase;
     private static Long id;
-    private Cursor Hours; 
+    private Cursor mHours; 
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,13 +56,13 @@ public class LocationDetails extends Activity {
         diningDatabase = myDbHelper.getReadableDatabase();
         id = this.getIntent().getLongExtra("id", -1); //get the location ID from the intent
         loadLocation(id); //set the name and other (non-changing) things for the location
-        Hours = getHours(today, diningDatabase);//during init, load the current hours as today's hours
+        mHours = getHours(today, diningDatabase);//during init, load the current hours as today's hours
         curHoursDisplay = today; //this keeps track of what day is currently displayed in the hours box
         
-        day = (TextView) findViewById(R.restaurantDetails.hoursDay);
-        range = (TextView) findViewById(R.restaurantDetails.hoursRangeDisplay);
-        if (Hours.moveToFirst()){
-            updateRangeText(today, parseHours(Hours.getString(0)), 1);
+        mDay = (TextView) findViewById(R.restaurantDetails.hoursDay);
+        mRange = (TextView) findViewById(R.restaurantDetails.hoursRangeDisplay);
+        if (mHours.moveToFirst()){
+            updateRangeText(today, parseHours(mHours.getString(0)), 1);
         } else {
             //something broke.
         }
@@ -63,10 +73,10 @@ public class LocationDetails extends Activity {
                 if (curHoursDisplay > 7){
                     curHoursDisplay = curHoursDisplay - 7;
                 }
-                Hours = getHours(curHoursDisplay, diningDatabase);
+                mHours = getHours(curHoursDisplay, diningDatabase);
                 String[] newhours = null;
-                if (Hours.moveToFirst()){
-                    newhours = parseHours(Hours.getString(0));
+                if (mHours.moveToFirst()){
+                    newhours = parseHours(mHours.getString(0));
                 } else {
                     //something broke. 
                 }
@@ -83,10 +93,10 @@ public class LocationDetails extends Activity {
                 if (curHoursDisplay < 1){
                     curHoursDisplay = curHoursDisplay + 7;
                 }
-                Hours = getHours(curHoursDisplay, diningDatabase);
+                mHours = getHours(curHoursDisplay, diningDatabase);
                 String[] newhours = null;
-                if (Hours.moveToFirst()){
-                    newhours = parseHours(Hours.getString(0));
+                if (mHours.moveToFirst()){
+                    newhours = parseHours(mHours.getString(0));
                 } else {
                     //something broke. 
                 }
@@ -96,20 +106,23 @@ public class LocationDetails extends Activity {
             }
         });
 
-        
+        MenuPagerAdapter adapter = new MenuPagerAdapter();
+        ViewPager myPager = (ViewPager) findViewById(R.id.menu_pager);
+        myPager.setAdapter(adapter);
+        myPager.setCurrentItem(2);
     }
 
     private void updateRangeText(int _day, String[] newhours, int pos) {
-        day.setText(getCurrentDay(_day));
+        mDay.setText(getCurrentDay(_day));
         if (newhours[0] == null){
-            range.setText("closed");
+            mRange.setText("closed");
         } else if (newhours[0].equals(newhours[1])){ //if open and close times are the same
-        	range.setText("Open 24/7!");
+            mRange.setText("Open 24/7!");
         } else {
             if (pos == 1){
-                range.setText(normalizeHours(newhours[0])+" - "+normalizeHours(newhours[1]));
+                mRange.setText(normalizeHours(newhours[0])+" - "+normalizeHours(newhours[1]));
             } else if (pos == 2) {
-                range.setText(normalizeHours(newhours[2])+" - "+normalizeHours(newhours[3]));
+                mRange.setText(normalizeHours(newhours[2])+" - "+normalizeHours(newhours[3]));
             }
         }
     }
@@ -227,5 +240,69 @@ public class LocationDetails extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_location_details, menu);
         return true;
+    }
+    
+    /**
+     * PagerAdapter which allows you to page horizontally between menus for breakfast, lunch, and dinner. 
+     * @author Matthew Lavin
+     */
+    private class MenuPagerAdapter extends PagerAdapter {
+        
+        public int getCount() {
+            return 3;
+        }
+        
+        public Object instantiateItem(View collection, int position) {
+            LayoutInflater inflater = (LayoutInflater) collection.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            int page = R.layout.menu_page;
+            String meal = "";
+            switch (position) {
+                case 0:
+                    meal = "Breakfast!";
+                    break;
+                case 1:
+                    meal = "Lunch!";
+                    break;
+                case 2:
+                    meal = "Dinner!";
+                    break;
+            }
+            
+            View view = inflater.inflate(page, null);
+            TextView mealTitle = (TextView) view.findViewById(R.id.meal_title);
+            mealTitle.setText(meal);
+            
+            ((ViewPager) collection).addView(view, 0);
+            final ViewPager pager = (ViewPager)collection;
+            
+            View menupage = view.findViewById(R.id.menu_page_ll);
+            menupage.setOnClickListener(new View.OnClickListener() {
+                
+                @Override
+                public void onClick(View v) {
+                    int page = ((ViewPager) pager).getCurrentItem();
+                    Intent i = new Intent(getApplicationContext(), Menus.class);
+                    i.putExtra("page", page);
+                    startActivity(i);
+                }
+            });
+            
+            return view;
+        }
+        
+        @Override
+        public void destroyItem(View view, int x, Object obj) {
+            ((ViewPager) view).removeView((View) obj);
+        }
+        
+        @Override
+        public boolean isViewFromObject(View view, Object obj) {
+            return view == ((View) obj);
+        }
+        
+        @Override
+        public Parcelable saveState() {
+            return null;
+        }
     }
 }

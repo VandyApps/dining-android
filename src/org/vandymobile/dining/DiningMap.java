@@ -42,7 +42,7 @@ public class DiningMap extends MapActivity {
     private MapController _mapViewController;
     private LocationManager _locationManager;
     private LocationListener _locationListener;
-    GeoPoint p = null;
+    GeoPoint mPoint = null;
     private static DatabaseHelper myDbHelper;
     private static SQLiteDatabase diningDatabase;
     MyLocationOverlay myLocationOverlay;
@@ -64,6 +64,7 @@ public class DiningMap extends MapActivity {
         _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         _locationListener = new MyLocationListener();
         _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);//get current GPS location into a listener
+
         
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (x == null){
@@ -73,14 +74,14 @@ public class DiningMap extends MapActivity {
             x = _locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         }
         if (x != null){
-            p = new GeoPoint((int)(x.getLatitude()*1000000), 
+            mPoint = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
             myLocationOverlay = new MyLocationOverlay();
             myMap.getOverlays().add(myLocationOverlay); //this is an overlay which contains an image for our current location
             //This overlay is only drawn if we successfully retrieved the location of the user. 
         } else {
             Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
-            p = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
+            mPoint = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
         myDbHelper = new DatabaseHelper(this);
         try {
@@ -122,6 +123,16 @@ public class DiningMap extends MapActivity {
         return true;
     }
 
+    @Override 
+    public void onPause() {
+        super.onPause();
+        _locationManager.removeUpdates(_locationListener);
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);
+    }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -146,7 +157,7 @@ public class DiningMap extends MapActivity {
             Point cur;
             Paint my_paint = new Paint();
 
-            cur = mapView.getProjection().toPixels(p, null); //use this to get the location to draw to in usable format
+            cur = mapView.getProjection().toPixels(mPoint, null); //use this to get the location to draw to in usable format
 
             my_paint.setStyle(Paint.Style.STROKE);//this is used to draw to the canvas
             my_paint.setARGB(255, 0, 0, 0);
@@ -163,7 +174,7 @@ public class DiningMap extends MapActivity {
 
         public void onLocationChanged(Location loc) {
             GeoPoint locPoint = new GeoPoint((int)(loc.getLatitude()*1000000),(int)(loc.getLongitude()*1000000));
-            p = locPoint;
+            mPoint = locPoint;
             myLocationOverlay = new MyLocationOverlay();
             myMap.getOverlays().add(myLocationOverlay);
             _mapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...

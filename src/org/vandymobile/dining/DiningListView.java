@@ -270,10 +270,10 @@ public class DiningListView extends ListActivity {
      * @return: a String which represents the current state of the location
      */
     private String isOpen(String[] hours, Time cur){
-    	if (hours[0] == null){
-    		return "Closed";
-    	}
-    	
+        if (hours[0] == null){
+            return "Closed";
+        }
+        
         if (hours[0].equals(hours[1]) && hours[0].equals("7:00")){
             return "Open 24/7!";
         }
