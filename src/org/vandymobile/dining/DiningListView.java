@@ -27,6 +27,10 @@ import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 
+/**
+ * @author Matthew Lavin
+ */
+
 public class DiningListView extends ListActivity {
     public static class ViewHolder {
         public TextView tvTitle, tvDesc, tvDist, tvStatus;
@@ -121,6 +125,12 @@ public class DiningListView extends ListActivity {
         //TODO implement this
     }
     
+    /**
+     * getDistance: determines the distance, in miles, between two GeoPoint objects
+     * @param pointA: the first GeoPoint
+     * @param pointB: the second GeoPoint
+     * @return: the distance, in miles, between the two points. Is a float. 
+     */
     public double getDistance(GeoPoint pointA, GeoPoint pointB){
         Location locationA = new Location("point A");
     
@@ -135,11 +145,23 @@ public class DiningListView extends ListActivity {
         return (locationA.distanceTo(locationB)/1609.34);//return in miles, not meters
     }
 
+    /**
+     * roundDouble: Takes in a Double value and rounds it to a single decimal place
+     * @param d: the Double value
+     * @return: The double value, rounded to have one place after the decimal
+     */
     double roundDouble(double d) {
         DecimalFormat twoDForm = new DecimalFormat("#.#");
     return Double.valueOf(twoDForm.format(d));
 }
     
+    /**
+     * getHours: Queries the database and returns the hours for a location for the current day
+     * @param i: an integer representing the current day, from Sunday to Saturday, where Sunday is '1' and Saturday is '7'
+     * @param _db: the diningDatabase which should be queried
+     * @param id: the id of the location whose hours are being requested
+     * @return: a Cursor which contains the hours for the given location and day
+     */
     private Cursor getHours(int i, SQLiteDatabase _db, int id){
         switch (i){
             case Calendar.SUNDAY:
@@ -167,6 +189,12 @@ public class DiningListView extends ListActivity {
                 return null;
         }
     }
+    
+    /** 
+     * Generates a String array from a String containing a comma- and semicolon-separated list of times
+     * @param _in: a String containing a list of open and close times (e.g. "10:00,14:00;17:30,23:30")
+     * @return: a String array containing the time values split up (e.g. {"10:00","14:00","17:30","23:30"})
+     */
     private String[] parseHours(String _in){
         String[] ret = {null,null,null,null};
         if (_in == "null"){
@@ -195,8 +223,12 @@ public class DiningListView extends ListActivity {
         
         return ret;
     }
-    /*
-     * 
+    
+    /** 
+     * Generates a Time object from a given String containing a time (e.g. "7:00")
+     * @param sTime: a string containing one time value
+     * @param cur: A Time object which contains the current time
+     * @return: a Time object which is set to the time sTime represents and either today's or tomorrow's date (see below)
      */
     private Time calcTime(String sTime, Time cur){
         //TODO: make this function actually figure out which day it should be (possible?)
@@ -231,10 +263,17 @@ public class DiningListView extends ListActivity {
         return iTime;
     }
     
-    /*
-     * 
+    /**
+     * isOpen: determines whether a location is open using its open/close times and the current time
+     * @param hours: a String array containing the open and close times of a restaurant
+     * @param cur: a Time object which represents the current time
+     * @return: a String which represents the current state of the location
      */
     private String isOpen(String[] hours, Time cur){
+    	if (hours[0] == null){
+    		return "Closed";
+    	}
+    	
         if (hours[0].equals(hours[1]) && hours[0].equals("7:00")){
             return "Open 24/7!";
         }

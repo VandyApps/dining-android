@@ -32,6 +32,10 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
+/**
+ * @author Matthew Lavin
+ */
+
 public class DiningMap extends MapActivity {
 
     AllOverlays diningOverlay;
@@ -42,13 +46,14 @@ public class DiningMap extends MapActivity {
     private static DatabaseHelper myDbHelper;
     private static SQLiteDatabase diningDatabase;
     MyLocationOverlay myLocationOverlay;
+    MapView myMap;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dining_map_large);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
-        MapView myMap = (MapView) findViewById(R.id.mapview);
+        myMap = (MapView) findViewById(R.id.mapview);
         myMap.setBuiltInZoomControls(true);
                 
         GeoPoint _geoPoint = new GeoPoint(36143091, -86804699); //This is roughly the center of Vanderbilt
@@ -158,6 +163,9 @@ public class DiningMap extends MapActivity {
 
         public void onLocationChanged(Location loc) {
             GeoPoint locPoint = new GeoPoint((int)(loc.getLatitude()*1000000),(int)(loc.getLongitude()*1000000));
+            p = locPoint;
+            myLocationOverlay = new MyLocationOverlay();
+            myMap.getOverlays().add(myLocationOverlay);
             _mapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...
         }
         
@@ -174,19 +182,11 @@ public class DiningMap extends MapActivity {
             // TODO Auto-generated method stub
         }
     } 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    /** 
+     * AllOverlays: Adds overlays to the map for all locations in the database
+     * This class is adapted from a class of the same name in the previous version of the app. The author of that class is Austin Conner.
+     */
     public class AllOverlays extends ItemizedOverlay<OverlayItem> implements View.OnClickListener {
         
         private static final int NUM_FILTERS = 3;
@@ -305,6 +305,10 @@ public class DiningMap extends MapActivity {
             map.startActivity(toDetails);
         }
         
+        /**
+         * getLocationOverlay: returns the list of OverlayItems which have been added to the map
+         * @return: a list of OverlayItems
+         */
         public ArrayList<OverlayItem> getLocationOverlay() {
             return locationOverlay;
         }
@@ -334,10 +338,21 @@ public class DiningMap extends MapActivity {
             }
         }
         
+        /**
+         * setShowItem: Sets whether a specific item is visible or not
+         * @param i: the item id
+         * @param filter: the filter which is currently applied
+         * @param display: whether the item is visible
+         */
         public void setShowItem(int i, int filter, boolean display) {
             show[filter][i] = display;
         }
         
+        /**
+         * getShowItem: finds whether an item should be visible or not
+         * @param i: the id of the item
+         * @return: an array which says whether the item should be shown or not for each filter
+         */
         public boolean getShowItem(int i) {
             for (int j = 0; j<NUM_FILTERS; j++)
                 if (!show[j][i])

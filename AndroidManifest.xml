@@ -28,6 +28,8 @@
             </intent-filter>
         </activity>
         <activity
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:name=".DiningMap"
             android:label="@string/title_activity_dining_map" >
             <meta-data
