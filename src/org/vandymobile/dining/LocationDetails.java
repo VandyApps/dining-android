@@ -1,17 +1,14 @@
 package org.vandymobile.dining;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.vandymobile.dining.util.Location;
 import org.vandymobile.dining.util.Locations;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -31,60 +28,39 @@ public class LocationDetails extends Activity {
     
     private TextView mDay;
     private TextView mRange;
-    private static int today = new GregorianCalendar().get(Calendar.DAY_OF_WEEK);
+    private static int today = new GregorianCalendar().get(Calendar.DAY_OF_WEEK) - 1;
     private int curHoursDisplay;
-    private static DatabaseHelper myDbHelper;
-    private static SQLiteDatabase diningDatabase;
     private static Long id;
-    private Cursor mHours; 
     private static Locations loc;
+    private static Location mThisLoc;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_details);
         
-        myDbHelper = new DatabaseHelper(this);
-        try {
-            myDbHelper.createDataBase();
-        } catch (IOException ioe) {
-            throw new Error("Unable to create database");
-        }
-         
-        try {
-            myDbHelper.openDataBase();
-        } catch(SQLException sqle) {
-            throw sqle;
-        }
-        diningDatabase = myDbHelper.getReadableDatabase();
         id = this.getIntent().getLongExtra("id", -1); //get the location ID from the intent
         loadLocation(id); //set the name and other (non-changing) things for the location
-        mHours = getHours(today, diningDatabase);//during init, load the current hours as today's hours
-        curHoursDisplay = today; //this keeps track of what day is currently displayed in the hours box
         
-        loc = Locations.getInstance(getApplicationContext());
+        curHoursDisplay = today; //this keeps track of what day is currently displayed in the hours box
         
         mDay = (TextView) findViewById(R.restaurantDetails.hoursDay);
         mRange = (TextView) findViewById(R.restaurantDetails.hoursRangeDisplay);
-        if (mHours.moveToFirst()){
-            updateRangeText(today, parseHours(mHours.getString(0)), 1);
-        } else {
-            //something broke.
-        }
+        
+        updateRangeText(today, parseHours(mThisLoc.getHours(today)), 1);//update the hours text with today's hours
+        
         Toast.makeText(getApplicationContext(), "TODAY IS ["+getCurrentDay(today)+"]", Toast.LENGTH_SHORT).show();
         ((ImageView) findViewById(R.restaurantDetails.rightArrow)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 curHoursDisplay = (curHoursDisplay+1);
-                if (curHoursDisplay > 7){
-                    curHoursDisplay = curHoursDisplay - 7;
+                if (curHoursDisplay > 6){
+                    curHoursDisplay = 0;
                 }
-                mHours = getHours(curHoursDisplay, diningDatabase);
+                
                 String[] newhours = null;
-                if (mHours.moveToFirst()){
-                    newhours = parseHours(mHours.getString(0));
-                } else {
-                    //something broke. 
-                }
+
+                newhours = parseHours(mThisLoc.getHours(curHoursDisplay));
+                
                 if (newhours != null){
                     updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
                 }
@@ -95,16 +71,14 @@ public class LocationDetails extends Activity {
         ((ImageView) findViewById(R.restaurantDetails.leftArrow)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 curHoursDisplay = (curHoursDisplay-1);
-                if (curHoursDisplay < 1){
-                    curHoursDisplay = curHoursDisplay + 7;
+                if (curHoursDisplay < 0){
+                    curHoursDisplay = 6;
                 }
-                mHours = getHours(curHoursDisplay, diningDatabase);
+                
                 String[] newhours = null;
-                if (mHours.moveToFirst()){
-                    newhours = parseHours(mHours.getString(0));
-                } else {
-                    //something broke. 
-                }
+                
+                newhours = parseHours(mThisLoc.getHours(curHoursDisplay));
+                
                 if (newhours != null){
                     updateRangeText(curHoursDisplay, newhours, 1);//so far only supporting the first set of hours each day
                 }
@@ -120,7 +94,7 @@ public class LocationDetails extends Activity {
     private void updateRangeText(int _day, String[] newhours, int pos) {
         mDay.setText(getCurrentDay(_day));
         if (newhours[0] == null){
-            mRange.setText("closed");
+            mRange.setText("Closed");
         } else if (newhours[0].equals(newhours[1])){ //if open and close times are the same
             mRange.setText("Open 24/7!");
         } else {
@@ -133,6 +107,7 @@ public class LocationDetails extends Activity {
     }
 
     private CharSequence getCurrentDay(int _day) {
+        _day++;
         switch (_day) {
             case Calendar.SUNDAY:
                 return "Sunday";
@@ -152,34 +127,7 @@ public class LocationDetails extends Activity {
                 return "";
         } 
     }
-
-    private Cursor getHours(int i, SQLiteDatabase _db){
-        switch (i){
-            case Calendar.SUNDAY:
-                String[] tmp = {"sunday_hours"};
-                return _db.query("dining", tmp, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.MONDAY:
-                String[] tmp1 = {"monday_hours"};
-                return _db.query("dining", tmp1, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.TUESDAY:
-                String[] tmp2 = {"tuesday_hours"};
-                return _db.query("dining", tmp2, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.WEDNESDAY:
-                String[] tmp3 = {"wednesday_hours"};
-                return _db.query("dining", tmp3, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.THURSDAY:
-                String[] tmp4 = {"thursday_hours"};
-                return _db.query("dining", tmp4, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.FRIDAY:
-                String[] tmp5 = {"friday_hours"};
-                return _db.query("dining", tmp5, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            case Calendar.SATURDAY:
-                String[] tmp6 = {"saturday_hours"};
-                return _db.query("dining", tmp6, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
-            default:
-                return null;
-        }
-    }
+    
     public String[] parseHours(String _in){
         String[] ret = {null,null,null,null};
         if (_in == "null"){
@@ -230,15 +178,21 @@ public class LocationDetails extends Activity {
     }
     
     private void loadLocation(Long id){
-        Cursor locationCursor = diningDatabase.query("dining", null, "_id = "+DiningListView.RestaurantMap[id.intValue()], null, null, null, null);
+        loc = Locations.getInstance(getApplicationContext());
+        mThisLoc = loc.mLocations[id.intValue()];
         String name = "default name";
-        if (locationCursor.moveToFirst()){
-            name = locationCursor.getString(locationCursor.getColumnIndex("name"));
-        }
-        
+        name = mThisLoc.mName;        
+
         Toast.makeText(getApplicationContext(), "id is: ["+id+"]", Toast.LENGTH_SHORT).show();
+        
         TextView nametv = (TextView) findViewById(R.restaurantDetails.name);
         nametv.setText(name);
+        
+        TextView phonetv = (TextView) findViewById(R.restaurantDetails.phone);
+        phonetv.setText(mThisLoc.mPhone);
+        
+        TextView urltv = (TextView) findViewById(R.restaurantDetails.web);
+        urltv.setText(mThisLoc.mUrl);
     }
 
     @Override

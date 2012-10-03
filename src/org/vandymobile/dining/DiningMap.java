@@ -1,15 +1,11 @@
 package org.vandymobile.dining;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.vandymobile.dining.util.Locations;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -20,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.text.format.Time;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,41 +37,42 @@ import com.google.android.maps.OverlayItem;
 
 public class DiningMap extends MapActivity {
 
-    AllOverlays diningOverlay;
-    private MapController _mapViewController;
-    private LocationManager _locationManager;
-    private LocationListener _locationListener;
+    AllOverlays mDiningOverlay;
+    private MapController mMapViewController;
+    private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
     GeoPoint mPoint = null;
     private static Locations loc;
-    private static DatabaseHelper myDbHelper;
-    private static SQLiteDatabase diningDatabase;
     MyLocationOverlay myLocationOverlay;
     MapView myMap;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        loc = Locations.getInstance(getApplicationContext());
+        
         setContentView(R.layout.dining_map_large);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
         myMap = (MapView) findViewById(R.id.mapview);
         myMap.setBuiltInZoomControls(true);
                 
         GeoPoint _geoPoint = new GeoPoint(36143091, -86804699); //This is roughly the center of Vanderbilt
-        _mapViewController = myMap.getController();
-        _mapViewController.animateTo(_geoPoint);
-        _mapViewController.setZoom(17); //center map on this point, zoomed to fit
+        mMapViewController = myMap.getController();
+        mMapViewController.animateTo(_geoPoint);
+        mMapViewController.setZoom(17); //center map on this point, zoomed to fit
         
-        _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        _locationListener = new MyLocationListener();
-        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);//get current GPS location into a listener
+        mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        mLocationListener = new MyLocationListener();
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);//get current GPS location into a listener
 
         
-        Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location x = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (x == null){
-            x = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            x = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
         if (x == null){
-            x = _locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            x = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         }
         if (x != null){
             mPoint = new GeoPoint((int)(x.getLatitude()*1000000), 
@@ -86,26 +84,11 @@ public class DiningMap extends MapActivity {
             Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
             mPoint = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
-        myDbHelper = new DatabaseHelper(this);
-        try {
-            myDbHelper.createDataBase();
-        } catch (IOException ioe) {
-            throw new Error("Unable to create database");
-        }
-         
-        try {
-            myDbHelper.openDataBase();
-        } catch(SQLException sqle) {
-            throw sqle;
-        }
-        diningDatabase = myDbHelper.getReadableDatabase();
-        
-        loc = Locations.getInstance(getApplicationContext());
         
         // creates the overlay containing markers for all dining locations
         // uses the database
-        diningOverlay = new AllOverlays(this, myMap);
-        myMap.getOverlays().add(diningOverlay);
+        mDiningOverlay = new AllOverlays(this, myMap);
+        myMap.getOverlays().add(mDiningOverlay);
     }
     
     public void homeClick(View v){
@@ -131,12 +114,12 @@ public class DiningMap extends MapActivity {
     @Override 
     public void onPause() {
         super.onPause();
-        _locationManager.removeUpdates(_locationListener);
+        mLocationManager.removeUpdates(mLocationListener);
     }
     @Override
     public void onResume(){
         super.onResume();
-        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _locationListener);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
     }
     
     @Override
@@ -182,7 +165,7 @@ public class DiningMap extends MapActivity {
             mPoint = locPoint;
             myLocationOverlay = new MyLocationOverlay();
             myMap.getOverlays().add(myLocationOverlay);
-            _mapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...
+            mMapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...
         }
         
         public void onProviderDisabled(String provider) {
@@ -233,16 +216,15 @@ public class DiningMap extends MapActivity {
             
             popup.setOnClickListener(this);
             
-            String[] tmp = {"lat", "long", "name"};
-            Cursor locName = diningDatabase.query("dining", tmp, null, null, null, null, "name");
-            locName.moveToFirst(); //move the cursor from row -1 to the first row (row 0)
-            
             //ArrayList<Long> IDs = Restaurant.getIDs();
-            show = new boolean [NUM_FILTERS][locName.getCount()]; // only 1 possible criteria for showing now
+            show = new boolean [NUM_FILTERS][loc.mCount]; // only 1 possible criteria for showing now
 
-            for (int i = 0; i < locName.getCount(); i++) {
-                OverlayItem overlayItem = new OverlayItem(new GeoPoint((int)(locName.getFloat(0)*1000000),
-                        (int)(locName.getFloat(1)*1000000)), locName.getString(2), "sample hours text");
+            for (int i = 0; i < loc.mCount; i++) {
+                Time now = new Time();
+                now.setToNow();
+                org.vandymobile.dining.util.Location cur = loc.mLocations[i];
+                String status = DiningListView.isOpen(DiningListView.parseHours(cur.getHours()),now);
+                OverlayItem overlayItem = new OverlayItem(cur.mLocation, cur.mName, status);
                 /*if (Restaurant.offCampus(IDs.get(i)))
                     overlayItem.setMarker(boundCenterBottom(map.getResources().getDrawable(R.drawable.map_marker_n)));
                         // TODO get a better custom marker for off campus restaurants and/or make more custom markers for different 
@@ -250,7 +232,6 @@ public class DiningMap extends MapActivity {
                 else overlayItem.setMarker(boundCenterBottom(map.getResources().getDrawable(R.drawable.map_marker_v)));*/
                 overlayItem.setMarker(boundCenterBottom(map.getResources().getDrawable(R.drawable.pushpin)));
                 locationOverlay.add(overlayItem);
-                locName.move(1);//move the cursor forward one position
                 for (int j = 0; j < NUM_FILTERS; j++)
                     show[j][i] = true;
             } 

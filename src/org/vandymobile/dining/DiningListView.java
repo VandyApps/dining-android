@@ -1,8 +1,6 @@
 package org.vandymobile.dining;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Calendar;
 
 import org.vandymobile.dining.util.Locations;
 
@@ -10,9 +8,6 @@ import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -39,13 +34,10 @@ public class DiningListView extends ListActivity {
         private ImageView imgView;
         }
     public static Integer[] RestaurantMap = {24,25,26,7,27,28,29,4,30,3,31,11,12,23,32,22,5,18,33,34,17,35,36,37,38,39,40,9,8,1,10,41,42,43,44,45,46,15,16,14,47,2,6,13,19,21,20,48,49,50};
-    /*private static DatabaseHelper myDbHelper;
-    private static SQLiteDatabase diningDatabase;*/
     private String[] adapterInput;
     private GeoPoint curLoc = null;
     private Time now;
     private static Locations loc;
-    int curDay;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,23 +47,6 @@ public class DiningListView extends ListActivity {
         now.setToNow();
         
         loc = Locations.getInstance(getApplicationContext());
-
-        curDay = now.weekDay + 1;// to match up with the Calendar class' day numbering scheme
-        
-        /*myDbHelper = new DatabaseHelper(this);
-         
-        try {
-            myDbHelper.createDataBase();
-        } catch (IOException ioe) {
-            throw new Error("Unable to create database");
-        }
-         
-        try {
-            myDbHelper.openDataBase();
-        } catch(SQLException sqle) {
-            throw sqle;
-        }
-        diningDatabase = myDbHelper.getReadableDatabase();*/
 
         adapterInput = new String[loc.mCount];
         
@@ -151,41 +126,6 @@ public class DiningListView extends ListActivity {
     double roundDouble(double d) {
         DecimalFormat twoDForm = new DecimalFormat("#.#");
     return Double.valueOf(twoDForm.format(d));
-}
-    
-    /**
-     * getHours: Queries the database and returns the hours for a location for the current day
-     * @param i: an integer representing the current day, from Sunday to Saturday, where Sunday is '1' and Saturday is '7'
-     * @param _db: the diningDatabase which should be queried
-     * @param id: the id of the location whose hours are being requested
-     * @return: a Cursor which contains the hours for the given location and day
-     */
-    private Cursor getHours(int i, SQLiteDatabase _db, int id){
-        switch (i){
-            case Calendar.SUNDAY:
-                String[] tmp = {"sunday_hours"};
-                return _db.query("dining", tmp, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.MONDAY:
-                String[] tmp1 = {"monday_hours"};
-                return _db.query("dining", tmp1, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.TUESDAY:
-                String[] tmp2 = {"tuesday_hours"};
-                return _db.query("dining", tmp2, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.WEDNESDAY:
-                String[] tmp3 = {"wednesday_hours"};
-                return _db.query("dining", tmp3, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.THURSDAY:
-                String[] tmp4 = {"thursday_hours"};
-                return _db.query("dining", tmp4, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.FRIDAY:
-                String[] tmp5 = {"friday_hours"};
-                return _db.query("dining", tmp5, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            case Calendar.SATURDAY:
-                String[] tmp6 = {"saturday_hours"};
-                return _db.query("dining", tmp6, "_id = "+DiningListView.RestaurantMap[id], null, null, null, null);
-            default:
-                return null;
-        }
     }
     
     /** 
@@ -193,7 +133,7 @@ public class DiningListView extends ListActivity {
      * @param _in: a String containing a list of open and close times (e.g. "10:00,14:00;17:30,23:30")
      * @return: a String array containing the time values split up (e.g. {"10:00","14:00","17:30","23:30"})
      */
-    private String[] parseHours(String _in){
+    public static String[] parseHours(String _in){
         String[] ret = {null,null,null,null};
         if (_in == "null"){
             return ret;
@@ -228,7 +168,7 @@ public class DiningListView extends ListActivity {
      * @param cur: A Time object which contains the current time
      * @return: a Time object which is set to the time sTime represents and either today's or tomorrow's date (see below)
      */
-    private Time calcTime(String sTime, Time cur){
+    public static Time calcTime(String sTime, Time cur){
         //TODO: make this function actually figure out which day it should be (possible?)
         
         // *****************************************************************************************************************
@@ -267,7 +207,7 @@ public class DiningListView extends ListActivity {
      * @param cur: a Time object which represents the current time
      * @return: a String which represents the current state of the location
      */
-    private String isOpen(String[] hours, Time cur){
+    public static String isOpen(String[] hours, Time cur){
         if (hours[0] == null){
             return "Closed";
         }
@@ -378,14 +318,19 @@ public class DiningListView extends ListActivity {
 
             
             String[] tempHours;
-            int hoursDay = curDay;
-            if (now.hour <= 4){ //this getHours call assumes that if it is before 5am you want the hours for YESTERDAY
+            int hoursDay = now.weekDay;
+            if (now.hour <= 4){ //this call assumes that if it is before 5am you want the hours for YESTERDAY
                                 //e.g. if it is 1:00am on a Tuesday, you want to look at Monday's hours for locations
                 hoursDay--;
             }
+            if (hoursDay == -1){
+                hoursDay = 6;
+            }
             
-            tempHours = parseHours(loc.mLocations[position].mHours[hoursDay-1]); //This is hoursDay-1 because the array of hours is 0-indexed
             
+            tempHours = parseHours(loc.mLocations[position].getHours(hoursDay));//using our already-initialized Time object is 
+                                                                                //less resource-intensive than having the Location
+                                                                                //object make its own
             String tempName = "this is a default value";
 
             tempName = loc.mLocations[position].mName;
