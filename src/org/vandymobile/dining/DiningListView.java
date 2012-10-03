@@ -39,10 +39,9 @@ public class DiningListView extends ListActivity {
         private ImageView imgView;
         }
     public static Integer[] RestaurantMap = {24,25,26,7,27,28,29,4,30,3,31,11,12,23,32,22,5,18,33,34,17,35,36,37,38,39,40,9,8,1,10,41,42,43,44,45,46,15,16,14,47,2,6,13,19,21,20,48,49,50};
-    private static DatabaseHelper myDbHelper;
-    private static SQLiteDatabase diningDatabase;
+    /*private static DatabaseHelper myDbHelper;
+    private static SQLiteDatabase diningDatabase;*/
     private String[] adapterInput;
-    public static Cursor locCursor;
     private GeoPoint curLoc = null;
     private Time now;
     private static Locations loc;
@@ -54,10 +53,12 @@ public class DiningListView extends ListActivity {
         setContentView(R.layout.activity_dining_list_view);
         now = new Time();
         now.setToNow();
+        
+        loc = Locations.getInstance(getApplicationContext());
 
         curDay = now.weekDay + 1;// to match up with the Calendar class' day numbering scheme
         
-        myDbHelper = new DatabaseHelper(this);
+        /*myDbHelper = new DatabaseHelper(this);
          
         try {
             myDbHelper.createDataBase();
@@ -70,17 +71,9 @@ public class DiningListView extends ListActivity {
         } catch(SQLException sqle) {
             throw sqle;
         }
-        diningDatabase = myDbHelper.getReadableDatabase();
-        
-        String[] tmp2 = {"_id"};
-        Cursor adapterCursor = diningDatabase.query("dining", tmp2, null, null, null, null, null);
-        adapterInput = new String[adapterCursor.getCount()];
-        adapterCursor.close();
-        
-        String[] tmp = {"lat", "long", "name"};
-        locCursor = diningDatabase.query("dining", tmp, null, null, null, null, "name");
-        
-        loc = Locations.getInstance(getApplicationContext());
+        diningDatabase = myDbHelper.getReadableDatabase();*/
+
+        adapterInput = new String[loc.mCount];
         
         LocationManager _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -341,7 +334,6 @@ public class DiningListView extends ListActivity {
         IconicAdapter(Activity context) {
             super(context, R.layout.row, adapterInput);
             this.context=context; 
-            String[] tmp = {"name","type"};
             }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -391,20 +383,15 @@ public class DiningListView extends ListActivity {
                                 //e.g. if it is 1:00am on a Tuesday, you want to look at Monday's hours for locations
                 hoursDay--;
             }
-            Cursor hoursCursor = getHours(hoursDay, diningDatabase, position);
-            hoursCursor.moveToFirst();//initialize the cursor
-            tempHours = parseHours(hoursCursor.getString(0));
-            hoursCursor.close();
+            
+            tempHours = parseHours(loc.mLocations[position].mHours[hoursDay-1]); //This is hoursDay-1 because the array of hours is 0-indexed
             
             String tempName = "this is a default value";
 
             tempName = loc.mLocations[position].mName;
             String description = loc.mLocations[position].mDescription;
-
-            if (locCursor.moveToPosition(position)){
-                GeoPoint thisLocation = new GeoPoint((int)(locCursor.getFloat(0)*1000000), (int)(locCursor.getFloat(1)*1000000));
-                holder.tvDist.setText(roundDouble(getDistance(thisLocation, curLoc))+" mi away");
-            }
+            
+            holder.tvDist.setText(roundDouble(getDistance(loc.mLocations[position].mLocation,curLoc)) + " mi away");
             
             holder.tvTitle.setText(tempName);
             holder.tvStatus.setText(isOpen(tempHours, now));
