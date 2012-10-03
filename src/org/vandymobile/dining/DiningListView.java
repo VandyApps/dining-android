@@ -337,13 +337,11 @@ public class DiningListView extends ListActivity {
     
     class IconicAdapter extends ArrayAdapter<String> { 
         Activity context;
-        private Cursor nameCursor;
         
         IconicAdapter(Activity context) {
             super(context, R.layout.row, adapterInput);
             this.context=context; 
             String[] tmp = {"name","type"};
-            nameCursor = diningDatabase.query("dining", tmp, null, null, null, null, "name");
             }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -399,10 +397,9 @@ public class DiningListView extends ListActivity {
             hoursCursor.close();
             
             String tempName = "this is a default value";
-            nameCursor.moveToFirst();//initialize the cursor
-            nameCursor.move(position);
-            tempName = nameCursor.getString(0); //grab the name value for the current row
-            String description = nameCursor.getString(1);
+
+            tempName = loc.mLocations[position].mName;
+            String description = loc.mLocations[position].mDescription;
 
             if (locCursor.moveToPosition(position)){
                 GeoPoint thisLocation = new GeoPoint((int)(locCursor.getFloat(0)*1000000), (int)(locCursor.getFloat(1)*1000000));

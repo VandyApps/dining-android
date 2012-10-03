@@ -17,6 +17,7 @@ public class Locations {
 
     private static Locations instance = null;
     public Location[] mLocations;
+    public int mCount;
     
     /**
      * Grabs all of the data and stores it in an array. This ensures we don't have to ever deal with cursors or any slow DB operations
@@ -46,14 +47,16 @@ public class Locations {
         Cursor locationsCursor = diningDatabase.query("dining", where, null, null, null, null, "name");
         
         locationsCursor.moveToFirst();
-        mLocations = new Location[locationsCursor.getCount()];
+        mCount = locationsCursor.getCount();
+        mLocations = new Location[mCount];
         
-        for (int i = 0;i < locationsCursor.getCount(); i++) {
+        for (int i = 0;i < mCount; i++) {
             mLocations[i] = new Location(locationsCursor.getInt(0), locationsCursor.getString(1), locationsCursor.getString(2),
                     locationsCursor.getFloat(3),locationsCursor.getFloat(4), locationsCursor.getString(5),locationsCursor.getString(6),
                     locationsCursor.getString(7),locationsCursor.getString(8),locationsCursor.getString(9),locationsCursor.getString(10),
                     locationsCursor.getString(11),locationsCursor.getString(12),locationsCursor.getString(13),locationsCursor.getInt(14),
                     locationsCursor.getInt(15),locationsCursor.getInt(16));
+            locationsCursor.move(1);
         }
         
         locationsCursor.close();
