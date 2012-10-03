@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 
+import org.vandymobile.dining.util.Locations;
+
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
@@ -43,6 +45,7 @@ public class DiningListView extends ListActivity {
     public static Cursor locCursor;
     private GeoPoint curLoc = null;
     private Time now;
+    private static Locations loc;
     int curDay;
     
     @Override
@@ -76,6 +79,8 @@ public class DiningListView extends ListActivity {
         
         String[] tmp = {"lat", "long", "name"};
         locCursor = diningDatabase.query("dining", tmp, null, null, null, null, "name");
+        
+        loc = Locations.getInstance(getApplicationContext());
         
         LocationManager _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);

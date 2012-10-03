@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.vandymobile.dining.util.Locations;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +37,7 @@ public class LocationDetails extends Activity {
     private static SQLiteDatabase diningDatabase;
     private static Long id;
     private Cursor mHours; 
+    private static Locations loc;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,8 @@ public class LocationDetails extends Activity {
         loadLocation(id); //set the name and other (non-changing) things for the location
         mHours = getHours(today, diningDatabase);//during init, load the current hours as today's hours
         curHoursDisplay = today; //this keeps track of what day is currently displayed in the hours box
+        
+        loc = Locations.getInstance(getApplicationContext());
         
         mDay = (TextView) findViewById(R.restaurantDetails.hoursDay);
         mRange = (TextView) findViewById(R.restaurantDetails.hoursRangeDisplay);

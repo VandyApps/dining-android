@@ -3,6 +3,8 @@ package org.vandymobile.dining;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.vandymobile.dining.util.Locations;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -43,6 +45,7 @@ public class DiningMap extends MapActivity {
     private LocationManager _locationManager;
     private LocationListener _locationListener;
     GeoPoint mPoint = null;
+    private static Locations loc;
     private static DatabaseHelper myDbHelper;
     private static SQLiteDatabase diningDatabase;
     MyLocationOverlay myLocationOverlay;
@@ -96,6 +99,8 @@ public class DiningMap extends MapActivity {
             throw sqle;
         }
         diningDatabase = myDbHelper.getReadableDatabase();
+        
+        loc = Locations.getInstance(getApplicationContext());
         
         // creates the overlay containing markers for all dining locations
         // uses the database
