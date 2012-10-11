@@ -27,6 +27,7 @@ public class Menus extends Activity {
         String[] click = {"You clicked Breakfast!","You clicked Lunch!","You clicked Dinner!","What did you click?"};
         int page = i.getIntExtra("page", 3);
         ((TextView)findViewById(R.id.menu_tv)).setText(click[page]);
+        
     }
 
     @Override

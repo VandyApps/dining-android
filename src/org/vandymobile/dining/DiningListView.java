@@ -38,6 +38,7 @@ public class DiningListView extends ListActivity {
     private GeoPoint curLoc = null;
     private Time now;
     private static Locations loc;
+    private int mClosestLoc;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,8 +48,6 @@ public class DiningListView extends ListActivity {
         now.setToNow();
         
         loc = Locations.getInstance(getApplicationContext());
-
-        adapterInput = new String[loc.mCount];
         
         LocationManager _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -64,7 +63,11 @@ public class DiningListView extends ListActivity {
         } else {
             Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
             curLoc = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
-        }        
+        }
+        
+        mClosestLoc = getClosest();
+        
+        adapterInput = new String[loc.mCount];
         setListAdapter(new IconicAdapter(this));
     }
 
@@ -75,6 +78,11 @@ public class DiningListView extends ListActivity {
     }
     
     public void onListItemClick(ListView parent, View v, int position, long id) {
+        if (id == 0){
+        	id = mClosestLoc;
+        } else if (id > 0 && id <= mClosestLoc){
+        	id--;
+        }
         startRestaurantDetails(position, id);
     }
     
@@ -96,6 +104,25 @@ public class DiningListView extends ListActivity {
     }
     public void happyClick(View v){
         //TODO implement this
+    }
+    
+    /**
+     * Determines which is the closest open dining location to your current position.
+     * @return: the id of the closest open dining location
+     */
+    private int getClosest(){
+        int id = 0;
+        double smallest = getDistance(curLoc, loc.mLocations[0].mLocation);
+        for (int i = 0; i < loc.mCount; i++){
+            if (loc.mLocations[i].isOpen()){
+            	double distance = getDistance(curLoc, loc.mLocations[i].mLocation);
+            	if (distance < smallest){
+            		smallest = distance;
+            		id = i;
+            	}
+            }
+        }
+        return id;
     }
     
     /**
@@ -207,7 +234,7 @@ public class DiningListView extends ListActivity {
      * @param cur: a Time object which represents the current time
      * @return: a String which represents the current state of the location
      */
-    public static String isOpen(String[] hours, Time cur){
+    public static String isOpen(String[] hours, Time cur){ //TODO: there is an error in the logic of this method (or calcTime, perhaps)
         if (hours[0] == null){
             return "Closed";
         }
@@ -315,18 +342,22 @@ public class DiningListView extends ListActivity {
                     holder = (ViewHolder) convertView.getTag();
                 }
             }
-
+            
+            if (position == 0){
+            	position = mClosestLoc;
+            } else if (position > 0 && position <= mClosestLoc){
+            	position--;
+            }
             
             String[] tempHours;
             int hoursDay = now.weekDay;
             if (now.hour <= 4){ //this call assumes that if it is before 5am you want the hours for YESTERDAY
                                 //e.g. if it is 1:00am on a Tuesday, you want to look at Monday's hours for locations
                 hoursDay--;
+                if (hoursDay == -1){
+                    hoursDay = 6;
+                }
             }
-            if (hoursDay == -1){
-                hoursDay = 6;
-            }
-            
             
             tempHours = parseHours(loc.mLocations[position].getHours(hoursDay));//using our already-initialized Time object is 
                                                                                 //less resource-intensive than having the Location
