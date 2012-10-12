@@ -50,18 +50,22 @@
                 <TextView android:id="@+restaurantDetails/phone_header"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:textSize="18dp" android:textColor="@android:color/secondary_text_light"
+                        android:visibility="gone"
                         android:text="Phone Number" android:padding="3dp" />
                 <TextView android:id="@+restaurantDetails/phone"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:textSize="14dp" android:textColor="@android:color/secondary_text_light"
+                        android:visibility="gone"
                         android:paddingLeft="20dp" />
                 <TextView android:id="@+restaurantDetails/web_header"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:textSize="18dp" android:textColor="@android:color/secondary_text_light"
+                        android:visibility="gone"
                         android:text="Internet address" android:padding="3dp" />
                 <TextView android:id="@+restaurantDetails/web"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:textSize="14dp" android:textColor="@android:color/secondary_text_light"
+                        android:visibility="gone"
                         android:paddingLeft="20dp" />
                 <android.support.v4.view.ViewPager android:id="@+id/menu_pager" android:layout_width="fill_parent"
                     android:layout_height="275dp" />

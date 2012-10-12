@@ -188,11 +188,24 @@ public class LocationDetails extends Activity {
         TextView nametv = (TextView) findViewById(R.restaurantDetails.name);
         nametv.setText(name);
         
-        TextView phonetv = (TextView) findViewById(R.restaurantDetails.phone);
-        phonetv.setText(mThisLoc.mPhone);
+        if (!mThisLoc.mPhone.equals("null")){
+	        TextView phonetv = (TextView) findViewById(R.restaurantDetails.phone);
+	        phonetv.setText(mThisLoc.mPhone);
+	        phonetv.setVisibility(View.VISIBLE);
+	        
+	        TextView phoneheader = (TextView) findViewById(R.restaurantDetails.phone_header);
+	        phoneheader.setVisibility(View.VISIBLE);
+        }
         
-        TextView urltv = (TextView) findViewById(R.restaurantDetails.web);
-        urltv.setText(mThisLoc.mUrl);
+        
+        if (!mThisLoc.mUrl.equals("null")){
+	        TextView urltv = (TextView) findViewById(R.restaurantDetails.web);
+	        urltv.setText(mThisLoc.mUrl);
+	        urltv.setVisibility(View.VISIBLE);
+	        
+	        TextView urlheader = (TextView) findViewById(R.restaurantDetails.web_header);
+	        urlheader.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
