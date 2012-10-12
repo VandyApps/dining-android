@@ -9,6 +9,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -34,7 +35,7 @@ public class DiningListView extends ListActivity {
         private ImageView imgView;
         }
     public static Integer[] RestaurantMap = {24,25,26,7,27,28,29,4,30,3,31,11,12,23,32,22,5,18,33,34,17,35,36,37,38,39,40,9,8,1,10,41,42,43,44,45,46,15,16,14,47,2,6,13,19,21,20,48,49,50};
-    private String[] adapterInput;
+    private IconicAdapter mCurAdapter;
     private GeoPoint curLoc = null;
     private Time now;
     private static Locations loc;
@@ -50,6 +51,10 @@ public class DiningListView extends ListActivity {
         loc = Locations.getInstance(getApplicationContext());
         
         LocationManager _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        
+        MyLocationListener _LocationListener = new MyLocationListener();
+        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, _LocationListener);//get current GPS location into a listener
+        
         Location x = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (x == null){
             x = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -67,8 +72,9 @@ public class DiningListView extends ListActivity {
         
         mClosestLoc = getClosest();
         
-        adapterInput = new String[loc.mCount];
-        setListAdapter(new IconicAdapter(this));
+        String[] adapterInput = new String[loc.mCount];
+        mCurAdapter = new IconicAdapter(this, adapterInput);
+        setListAdapter(mCurAdapter);
     }
 
     @Override
@@ -100,7 +106,8 @@ public class DiningListView extends ListActivity {
         startActivity(_int);
     }
     public void menuClick(View v){
-        //TODO implement this
+        Intent intent = new Intent(getApplicationContext(), Menus.class);
+        startActivity(intent);
     }
     public void happyClick(View v){
         //TODO implement this
@@ -295,10 +302,10 @@ public class DiningListView extends ListActivity {
     }
     
     
-    class IconicAdapter extends ArrayAdapter<String> { 
+    class IconicAdapter extends ArrayAdapter<String> {
         Activity context;
         
-        IconicAdapter(Activity context) {
+        IconicAdapter(Activity context, String[] adapterInput) {
             super(context, R.layout.row, adapterInput);
             this.context=context; 
             }
@@ -378,6 +385,28 @@ public class DiningListView extends ListActivity {
         }
     }
 
-    
-    
+    public class MyLocationListener implements LocationListener{
+    	int count = 0;
+        public void onLocationChanged(Location loc) {
+            count++;
+            if (count > 5){
+                GeoPoint locPoint = new GeoPoint((int)(loc.getLatitude()*1000000),(int)(loc.getLongitude()*1000000));
+                curLoc = locPoint;
+                count = 0;
+            }
+        }
+        
+        public void onProviderDisabled(String provider) {
+            // TODO Auto-generated method stub
+        }
+
+        public void onProviderEnabled(String provider) {
+            // TODO Auto-generated method stub
+        }
+
+        public void onStatusChanged(String provider,
+            int status, Bundle extras) {
+            // TODO Auto-generated method stub
+        }
+    }
 }
