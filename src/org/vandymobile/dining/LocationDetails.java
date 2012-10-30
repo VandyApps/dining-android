@@ -3,7 +3,7 @@ package org.vandymobile.dining;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.vandymobile.dining.util.Location;
+import org.vandymobile.dining.util.Restaurant;
 import org.vandymobile.dining.util.Locations;
 
 import android.app.Activity;
@@ -32,7 +32,7 @@ public class LocationDetails extends Activity {
     private int curHoursDisplay;
     private static Long id;
     private static Locations loc;
-    private static Location mThisLoc;
+    private static Restaurant mThisLoc;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {

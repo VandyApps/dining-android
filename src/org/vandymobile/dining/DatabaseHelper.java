@@ -22,11 +22,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static String DB_PATH = "/data/data/org.vandymobile.dining/databases/";
      
     private static String DB_NAME = "diningDatabase_2012update.db";
-     
+    
     private SQLiteDatabase myDataBase;
-     
+    
     private final Context myContext;
-     
+    
     /**
       * Constructor
       * Takes and keeps a reference of the passed context in order to access to the application assets and resources.
@@ -36,7 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         super(context, DB_NAME, null, 1);
         this.myContext = context;
     }    
-     
+    
     /**
       * Creates a empty database on the system and rewrites it with your own database.
       * */
@@ -53,16 +53,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             this.getReadableDatabase();
      
             try {
-     
                 copyDataBase();
-     
             } catch (IOException e) {
-     
                 throw new Error("Error copying database");
-     
             }
         }
-     
     }
      
     /**
@@ -76,17 +71,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         try{
             String myPath = DB_PATH + DB_NAME;
             checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
-     
-        }catch(SQLiteException e){
-     
+        } catch(SQLiteException e) {
             //database does't exist yet.
-     
         }
      
         if(checkDB != null){
-     
             checkDB.close();
-     
         }
      
         return checkDB != null ? true : false;
@@ -135,9 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
      
         if(myDataBase != null)
             myDataBase.close();
-     
         super.close();
-     
     }
      
     @Override

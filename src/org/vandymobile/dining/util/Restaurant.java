@@ -1,7 +1,10 @@
 package org.vandymobile.dining.util;
 
+import java.text.DecimalFormat;
+
 import org.vandymobile.dining.DiningListView;
 
+import android.location.Location;
 import android.text.format.Time;
 
 import com.google.android.maps.GeoPoint;
@@ -10,7 +13,7 @@ import com.google.android.maps.GeoPoint;
  * @author Matthew Lavin
  */
 
-public class Location {
+public class Restaurant {
 
     private final String[] mHours = new String[7];
     public final int mId;
@@ -24,7 +27,7 @@ public class Location {
     public final boolean mOnCampus;
     private Time now;
     
-    public Location(int id, String name, String type, float lat, float lon, String phone, String url, String sunday, String monday,
+    public Restaurant(int id, String name, String type, float lat, float lon, String phone, String url, String sunday, String monday,
             String tuesday, String wednesday, String thursday, String friday, String saturday, int on_campus, int meal_plan, int meal_money){
         mId = id;
         mName = name;
@@ -107,5 +110,34 @@ public class Location {
         } else {
         	return false;
         }
+    }
+    
+    /**
+     * getDistance: determines the distance, in miles, between this Restaurant and the GeoPoint param
+     * @param pointA: the point from which the distance to the restaurant is being measured
+     * @return: the distance, in miles, between the two points. Is a float. 
+     */
+    public double getDistance(GeoPoint pointA){
+        Location locationA = new Location("point A");
+    
+        locationA.setLatitude(pointA.getLatitudeE6() / 1E6);
+        locationA.setLongitude(pointA.getLongitudeE6() / 1E6);
+    
+        Location locationB = new Location("point B");
+    
+        locationB.setLatitude(mLocation.getLatitudeE6() / 1E6);
+        locationB.setLongitude(mLocation.getLongitudeE6() / 1E6);
+    
+        return roundDouble(locationA.distanceTo(locationB)/1609.34);//return in miles, not meters
+    }
+    
+    /**
+     * roundDouble: Takes in a Double value and rounds it to a single decimal place
+     * @param d: the Double value
+     * @return: The double value, rounded to have one place after the decimal
+     */
+    double roundDouble(double d) {
+        DecimalFormat twoDForm = new DecimalFormat("##.#");
+    return Double.valueOf(twoDForm.format(d));
     }
 }

@@ -1,20 +1,26 @@
 package org.vandymobile.dining;
 
-import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.vandymobile.dining.util.Locations;
+import org.vandymobile.dining.util.Restaurant;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -33,13 +39,21 @@ public class DiningListView extends ListActivity {
     public static class ViewHolder {
         public TextView tvTitle, tvDesc, tvDist, tvStatus;
         private ImageView imgView;
+        private int id;
         }
-    public static Integer[] RestaurantMap = {24,25,26,7,27,28,29,4,30,3,31,11,12,23,32,22,5,18,33,34,17,35,36,37,38,39,40,9,8,1,10,41,42,43,44,45,46,15,16,14,47,2,6,13,19,21,20,48,49,50};
+    public static Integer[] planFilter = {3,7,9,11,12,13,15,16,20,27,28,29,30,37,38,39,41,42,43,44,45};
     private IconicAdapter mCurAdapter;
     private GeoPoint curLoc = null;
     private Time now;
     private static Locations loc;
     private int mClosestLoc;
+    private boolean sortByOpen;
+    private boolean sortByName;
+    private boolean sortByDistance;
+    private boolean sortByPlan;
+    private int[] curIdList;
+    private int secondPartitionId;
+    
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,26 +84,42 @@ public class DiningListView extends ListActivity {
             curLoc = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
         
-        mClosestLoc = getClosest();
-        
-        String[] adapterInput = new String[loc.mCount];
+        String[] adapterInput = new String[loc.mCount + 2];
         mCurAdapter = new IconicAdapter(this, adapterInput);
         setListAdapter(mCurAdapter);
+        setSortOpen();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_dining_list_view, menu);
+        
         return true;
     }
     
-    public void onListItemClick(ListView parent, View v, int position, long id) {
-        if (id == 0){
-        	id = mClosestLoc;
-        } else if (id > 0 && id <= mClosestLoc){
-        	id--;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        if (item.getItemId() == R.id.menu_sort_open){
+        	setSortOpen();
+        } else if (item.getItemId() == R.id.menu_sort_name){
+        	setSortName();
+        } else if (item.getItemId() == R.id.menu_sort_distance){
+        	setSortDistance();
+        } else if (item.getItemId() == R.id.menu_sort_plan){
+        	setSortPlan();
         }
-        startRestaurantDetails(position, id);
+    	return true;
+    }
+    
+    public void onListItemClick(ListView parent, View v, int position, long id) {
+        ViewHolder holder = (ViewHolder)v.getTag();
+        int _id = holder.id;
+        /*if (_id == 0){
+            _id = mClosestLoc;
+        } else if (id > 0 && id <= mClosestLoc){
+            id--;
+        }*/
+        startRestaurantDetails(position, _id);
     }
     
     public void startRestaurantDetails(int position, long id){
@@ -117,16 +147,17 @@ public class DiningListView extends ListActivity {
      * Determines which is the closest open dining location to your current position.
      * @return: the id of the closest open dining location
      */
-    private int getClosest(){
+    private int getClosestOpen(){
         int id = 0;
         double smallest = getDistance(curLoc, loc.mLocations[0].mLocation);
         for (int i = 0; i < loc.mCount; i++){
-            if (loc.mLocations[i].isOpen()){
-            	double distance = getDistance(curLoc, loc.mLocations[i].mLocation);
-            	if (distance < smallest){
-            		smallest = distance;
-            		id = i;
-            	}
+            Restaurant current = loc.mLocations[i];
+            if (current.isOpen()){
+                double distance = getDistance(curLoc, current.mLocation);
+                if (distance < smallest){
+                    smallest = distance;
+                    id = current.mId;
+                }
             }
         }
         return id;
@@ -151,16 +182,6 @@ public class DiningListView extends ListActivity {
     
         return (locationA.distanceTo(locationB)/1609.34);//return in miles, not meters
     }
-
-    /**
-     * roundDouble: Takes in a Double value and rounds it to a single decimal place
-     * @param d: the Double value
-     * @return: The double value, rounded to have one place after the decimal
-     */
-    double roundDouble(double d) {
-        DecimalFormat twoDForm = new DecimalFormat("#.#");
-    return Double.valueOf(twoDForm.format(d));
-    }
     
     /** 
      * Generates a String array from a String containing a comma- and semicolon-separated list of times
@@ -169,7 +190,7 @@ public class DiningListView extends ListActivity {
      */
     public static String[] parseHours(String _in){
         String[] ret = {null,null,null,null};
-        if (_in == "null"){
+        if (_in.equals("null")){
             return ret;
         }
         for (int i = 0; i < _in.length(); i++){
@@ -301,13 +322,137 @@ public class DiningListView extends ListActivity {
         return "Invalid hours input";
     }
     
+    private int[] getOpenList(){
+        int[] ret = new int[loc.mCount];
+        int[] tmp = new int[loc.mCount];
+        int retcount = 0;
+        int tmpcount = 0;
+        for (int i = 0; i < loc.mCount; i++){
+            Restaurant cur = loc.mLocations[i];
+            if (cur.isOpen()){
+                ret[retcount] = cur.mId;
+                retcount++;
+            } else {
+                tmp[tmpcount] = cur.mId;
+                tmpcount++;
+            }
+        }
+        secondPartitionId = retcount;
+        for (int i = 0; i < tmpcount; i++){
+            ret[retcount] = tmp[i];
+            retcount++;
+        }
+        return ret;
+    }
+    
+    private int[] getNameList(){
+        int[] ret = new int[loc.mCount];
+        for (int i = 0; i < loc.mCount; i++){
+            ret[i] = loc.mLocations[i].mId;
+        }
+        return ret;
+    }
+    
+    private int[] getDistanceList(){
+        Map<Double,Integer> values = new HashMap<Double,Integer>();
+        double[] dists = new double[loc.mCount];
+        for (int i = 0; i < loc.mCount; i++){
+            dists[i] = getDistance(curLoc, loc.mLocations[i].mLocation);
+            values.put(dists[i], loc.mLocations[i].mId);
+        }
+        Arrays.sort(dists);
+        int[] ret = new int[loc.mCount];
+        for (int i = 0; i < loc.mCount; i++){
+            ret[i] = values.get(dists[i]);
+        }
+        return ret;
+    }
+    
+    private int[] getPlanList(){
+        int[] ret = new int[loc.mCount];
+        int[] tmp = new int[loc.mCount];
+        int retcount = 0;
+        int tmpcount = 0;
+        for (int i = 0; i < loc.mCount; i++){
+            Restaurant cur = loc.mLocations[i];
+            if (cur.mMealPlan){
+                ret[retcount] = cur.mId;
+                retcount++;
+            } else {
+                tmp[tmpcount] = cur.mId;
+                tmpcount++;
+            }
+        }
+        secondPartitionId = retcount;
+        for (int i = 0; i < tmpcount; i++){
+            ret[retcount] = tmp[i];
+            retcount++;
+        }
+        return ret;
+    }
+    
+    private String firstPartitionTitle;
+    private String secondPartitionTitle;
+    
+    private void setSortOpen(){
+        if (!sortByOpen){
+            curIdList = getOpenList();
+            sortByName = false;
+            sortByDistance = false;
+            sortByPlan = false;
+            sortByOpen = true;
+            firstPartitionTitle = "Open";
+            secondPartitionTitle = "Closed";
+            mClosestLoc = getClosestOpen();
+            mCurAdapter.notifyDataSetChanged();
+        }
+    }
+    
+    private void setSortName(){
+        if (!sortByName){
+            curIdList = getNameList();
+            sortByName = true;
+            sortByDistance = false;
+            sortByPlan = false;
+            sortByOpen = false;
+            mClosestLoc = getClosestOpen();
+            mCurAdapter.notifyDataSetChanged();
+        }
+    }
+    
+    private void setSortDistance(){
+        if (!sortByDistance){
+            curIdList = getDistanceList();
+            sortByName = false;
+            sortByDistance = true;
+            sortByPlan = false;
+            sortByOpen = false;
+            mClosestLoc = getClosestOpen();
+            mCurAdapter.notifyDataSetChanged();
+        }
+    }
+    
+    private void setSortPlan(){
+        if (!sortByPlan){
+            curIdList = getPlanList();
+            sortByName = false;
+            sortByDistance = false;
+            sortByPlan = true;
+            sortByOpen = false;
+            firstPartitionTitle = "Meal Plan";
+            secondPartitionTitle = "Not Meal Plan";
+            mClosestLoc = getClosestOpen();
+            mCurAdapter.notifyDataSetChanged();
+        }
+    }
     
     class IconicAdapter extends ArrayAdapter<String> {
         Activity context;
         
         IconicAdapter(Activity context, String[] adapterInput) {
             super(context, R.layout.row, adapterInput);
-            this.context=context; 
+            this.context=context;
+            mClosestLoc = getClosestOpen();
             }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -323,7 +468,7 @@ public class DiningListView extends ListActivity {
                 holder.imgView = (ImageView) convertView.findViewById(R.id.image);
                 convertView.setTag(holder);
             } else {
-                if (convertView == null) {
+                if (convertView == null || convertView.getId() == R.id.badid || convertView.getTag() == null) {
                     LayoutInflater inflater=context.getLayoutInflater();
                     convertView=inflater.inflate(R.layout.row, null);
                     holder = new ViewHolder();
@@ -350,11 +495,33 @@ public class DiningListView extends ListActivity {
                 }
             }
             
+            
+            
+            //TODO clean this mess up
+            boolean isFirstPos = false;
             if (position == 0){
-            	position = mClosestLoc;
-            } else if (position > 0 && position <= mClosestLoc){
-            	position--;
-            }
+                position = mClosestLoc;
+                isFirstPos = true;
+            } else if(position == 1){
+                TextView partition;
+                partition = createPartition(firstPartitionTitle);
+                return partition;
+            } else if (position > 0 && position <= mClosestLoc){// to account for the closest loc box
+                position--;
+            }//TODO clean this mess up
+            
+            if (!isFirstPos && position >= 1){// to account for the 'Open' partition
+                position--;
+            }//TODO clean this mess up
+            
+            if (!isFirstPos && position == secondPartitionId){ //this goes after the others because the value needs to be checked after 
+                                                //position is adjusted for the other things which were added
+                TextView partition;
+                partition = createPartition(secondPartitionTitle);
+                return partition;
+            } else if (position > secondPartitionId){
+                position--;
+            }//TODO clean this mess up
             
             String[] tempHours;
             int hoursDay = now.weekDay;
@@ -366,16 +533,24 @@ public class DiningListView extends ListActivity {
                 }
             }
             
-            tempHours = parseHours(loc.mLocations[position].getHours(hoursDay));//using our already-initialized Time object is 
+            
+            Restaurant currentRestaurant;
+            if (isFirstPos){
+                currentRestaurant = loc.findRestaurantById(position);
+            }else{
+                currentRestaurant = loc.findRestaurantById(curIdList[position]);
+            }       
+            
+            tempHours = parseHours(currentRestaurant.getHours(hoursDay));//using our already-initialized Time object is 
                                                                                 //less resource-intensive than having the Location
                                                                                 //object make its own
             String tempName = "this is a default value";
 
-            tempName = loc.mLocations[position].mName;
-            String description = loc.mLocations[position].mDescription;
+            tempName = currentRestaurant.mName;
+            String description = currentRestaurant.mDescription;
             
-            holder.tvDist.setText(roundDouble(getDistance(loc.mLocations[position].mLocation,curLoc)) + " mi away");
-            
+            holder.tvDist.setText(currentRestaurant.getDistance(curLoc) + " mi away");
+            holder.id = currentRestaurant.mId;
             holder.tvTitle.setText(tempName);
             holder.tvStatus.setText(isOpen(tempHours, now));
             holder.tvDesc.setText(description); 
@@ -383,10 +558,24 @@ public class DiningListView extends ListActivity {
 
             return(convertView);         
         }
+        
+        private TextView createPartition(String text){
+            TextView partition;
+            partition = new TextView(context);
+            partition.setBackgroundResource(android.R.drawable.dark_header);
+            partition.setGravity(Gravity.CENTER_VERTICAL);
+            partition.setFocusable(false);
+            partition.setClickable(false);//TODO figure out why the partition is clickable...
+            partition.setLongClickable(false);
+            partition.setTextSize((float) 14.0);
+            partition.setTypeface(Typeface.DEFAULT_BOLD);
+            partition.setText(text);
+            return partition;
+        }
     }
 
     public class MyLocationListener implements LocationListener{
-    	int count = 0;
+        int count = 0;
         public void onLocationChanged(Location loc) {
             count++;
             if (count > 5){

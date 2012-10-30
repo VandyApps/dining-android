@@ -16,8 +16,9 @@ import android.database.sqlite.SQLiteDatabase;
 public class Locations {
 
     private static Locations instance = null;
-    public Location[] mLocations;
+    public Restaurant[] mLocations;
     public int mCount;
+    private int[] mIds;
     
     /**
      * Grabs all of the data and stores it in an array. This ensures we don't have to ever deal with cursors or any slow DB operations
@@ -48,18 +49,22 @@ public class Locations {
         
         locationsCursor.moveToFirst();
         mCount = locationsCursor.getCount();
-        mLocations = new Location[mCount];
+        mLocations = new Restaurant[mCount];
+        mIds = new int[mCount];
         
         for (int i = 0;i < mCount; i++) {
-            mLocations[i] = new Location(locationsCursor.getInt(0), locationsCursor.getString(1), locationsCursor.getString(2),
+            mLocations[i] = new Restaurant(locationsCursor.getInt(0), locationsCursor.getString(1), locationsCursor.getString(2),
                     locationsCursor.getFloat(3),locationsCursor.getFloat(4), locationsCursor.getString(5),locationsCursor.getString(6),
                     locationsCursor.getString(7),locationsCursor.getString(8),locationsCursor.getString(9),locationsCursor.getString(10),
                     locationsCursor.getString(11),locationsCursor.getString(12),locationsCursor.getString(13),locationsCursor.getInt(14),
                     locationsCursor.getInt(15),locationsCursor.getInt(16));
+            mIds[mLocations[i].mId-1] = i;
             locationsCursor.move(1);
         }
         
         locationsCursor.close();
+        diningDatabase.close();
+        myDbHelper.close();
     }
     
     /**
@@ -74,5 +79,14 @@ public class Locations {
         } else {
             return instance;
         }
+    }
+    
+    /**
+     * Returns the restaurant object based on its ID
+     * @param id: The id of the restaurant
+     * @return: the actual restaurant object
+     */
+    public Restaurant findRestaurantById(int id){
+    	return mLocations[mIds[id-1]];
     }
 }

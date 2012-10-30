@@ -3,19 +3,17 @@ package org.vandymobile.dining;
 import java.util.ArrayList;
 
 import org.vandymobile.dining.util.Locations;
+import org.vandymobile.dining.util.Restaurant;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.text.format.Time;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,8 +41,9 @@ public class DiningMap extends MapActivity {
     private LocationListener mLocationListener;
     GeoPoint mPoint = null;
     private static Locations loc;
-    MyLocationOverlay myLocationOverlay;
+    //MyLocationOverlay myLocationOverlay;
     MapView myMap;
+    com.google.android.maps.MyLocationOverlay MLO;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,7 +64,7 @@ public class DiningMap extends MapActivity {
         mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         mLocationListener = new MyLocationListener();
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);//get current GPS location into a listener
-
+ 
         
         Location x = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (x == null){
@@ -77,8 +76,8 @@ public class DiningMap extends MapActivity {
         if (x != null){
             mPoint = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
-            myLocationOverlay = new MyLocationOverlay();
-            myMap.getOverlays().add(myLocationOverlay); //this is an overlay which contains an image for our current location
+            //myLocationOverlay = new MyLocationOverlay();
+            //myMap.getOverlays().add(myLocationOverlay); //this is an overlay which contains an image for our current location
             //This overlay is only drawn if we successfully retrieved the location of the user. 
         } else {
             Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
@@ -87,8 +86,11 @@ public class DiningMap extends MapActivity {
         
         // creates the overlay containing markers for all dining locations
         // uses the database
+        MLO = new com.google.android.maps.MyLocationOverlay(this,myMap);
+        MLO.enableMyLocation(); 
         mDiningOverlay = new AllOverlays(this, myMap);
         myMap.getOverlays().add(mDiningOverlay);
+        myMap.getOverlays().add(MLO);
     }
     
     public void homeClick(View v){
@@ -99,16 +101,11 @@ public class DiningMap extends MapActivity {
         // Already at map - do nothing
     }
     public void menuClick(View v){
-        //TODO implement this
+        Intent intent = new Intent(getApplicationContext(), Menus.class);
+        startActivity(intent);
     }
     public void happyClick(View v){
         //TODO implement this
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_dining_map, menu);
-        return true;
     }
 
     @Override 
@@ -121,51 +118,20 @@ public class DiningMap extends MapActivity {
         super.onResume();
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
     }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     protected boolean isRouteDisplayed() {
         return false;
     }
 
-    protected class MyLocationOverlay extends com.google.android.maps.Overlay {
-
-        @Override
-        public boolean draw(Canvas canvas, MapView mapView, boolean Shadow, long When) {
-            super.draw(canvas, mapView, Shadow);
-            Point cur;
-            Paint my_paint = new Paint();
-
-            cur = mapView.getProjection().toPixels(mPoint, null); //use this to get the location to draw to in usable format
-
-            my_paint.setStyle(Paint.Style.STROKE);//this is used to draw to the canvas
-            my_paint.setARGB(255, 0, 0, 0);
-            my_paint.setStrokeWidth(1);
-
-            Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.location); //temporary drawable for our current location
-            canvas.drawBitmap(bmp, cur.x, cur.y, my_paint);
-            
-            return true;
-        }
-    }
-
-    private class MyLocationListener implements LocationListener{
+    public class MyLocationListener implements LocationListener{
 
         public void onLocationChanged(Location loc) {
             GeoPoint locPoint = new GeoPoint((int)(loc.getLatitude()*1000000),(int)(loc.getLongitude()*1000000));
             mPoint = locPoint;
-            myLocationOverlay = new MyLocationOverlay();
-            myMap.getOverlays().add(myLocationOverlay);
-            mMapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...
+            /*myLocationOverlay = new MyLocationOverlay();
+            myMap.getOverlays().add(myLocationOverlay);*/
+            //mMapViewController.animateTo(locPoint); //follow the user? Not sure if we want this to happen or not...
         }
         
         public void onProviderDisabled(String provider) {
@@ -222,7 +188,7 @@ public class DiningMap extends MapActivity {
             for (int i = 0; i < loc.mCount; i++) {
                 Time now = new Time();
                 now.setToNow();
-                org.vandymobile.dining.util.Location cur = loc.mLocations[i];
+                Restaurant cur = loc.mLocations[i];
                 String status = DiningListView.isOpen(DiningListView.parseHours(cur.getHours()),now);
                 OverlayItem overlayItem = new OverlayItem(cur.mLocation, cur.mName, status);
                 /*if (Restaurant.offCampus(IDs.get(i)))
@@ -298,7 +264,7 @@ public class DiningMap extends MapActivity {
         public void onClick(View v) {
             Intent toDetails = new Intent(map, LocationDetails.class);
             long id = (long)clickedPosition;
-            toDetails.putExtra("id", id);//testing - might open the correct location?
+            toDetails.putExtra("id", id);//TODO this only opens the correct location when no settings are pressed
             map.startActivity(toDetails);
         }
         
@@ -318,17 +284,17 @@ public class DiningMap extends MapActivity {
                 switch (filter) {
                 case FILTER_CLOSED:
                     for (int i = 0; i < show[0].length; i++)
-                        if (/*!Restaurant.getHours(Restaurant.getIDs().get(i)).isOpen()*/false)
+                        if (/*!Restaurant.getHours(Restaurant.getIDs().get(i)).isOpen()*/!loc.mLocations[i].isOpen())
                             setShowItem(i, filter, false);
                     break;
                 case FILTER_PLAN:
                     for (int i = 0; i < show[0].length; i++)
-                        if (/*!Restaurant.mealPlanAccepted(Restaurant.getIDs().get(i))*/false)
+                        if (/*!Restaurant.mealPlanAccepted(Restaurant.getIDs().get(i))*/!loc.mLocations[i].mMealPlan)
                             setShowItem(i, filter, false);
                     break;
                 case FILTER_MONEY:
                     for (int i = 0; i < show[0].length; i++)
-                        if (/*!Restaurant.mealMoneyAccepted(Restaurant.getIDs().get(i))*/false)
+                        if (/*!Restaurant.mealMoneyAccepted(Restaurant.getIDs().get(i))*/!loc.mLocations[i].mMealMoney)
                             setShowItem(i, filter, false);
                     break;
                 }
@@ -363,20 +329,108 @@ public class DiningMap extends MapActivity {
 
     }
     
+    // MENU FUNCTIONS
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    public static final int MENU_SETTINGS = 0;
+    public static final int MENU_CURRENT_LOC = 1;
+   
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+            super.onCreateOptionsMenu(menu);
+            menu.add(Menu.NONE, MENU_SETTINGS, Menu.NONE, "Settings").
+                            setIcon(getResources().getDrawable(android.R.drawable.ic_menu_preferences));
+            menu.add(Menu.NONE, MENU_CURRENT_LOC, Menu.NONE, "My Location").
+                            setIcon(getResources().getDrawable(android.R.drawable.ic_menu_mylocation));
+            return true;
+    }
+   
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+            super.onOptionsItemSelected(item);
+            switch (item.getItemId()) {
+                case MENU_SETTINGS:
+                    showDialog(DIALOG_SETTINGS); //This is deprecated, but the new way uses fragments, which requires extending the FragmentActivity class. 
+                    //Since we are extending MapActivity, there is no good way to use fragments. 
+                    return true;
+                case MENU_CURRENT_LOC:
+                    if (MLO.getMyLocation() != null) {
+                        myMap.getController().animateTo(MLO.getMyLocation());
+                    } else {
+                        Toast.makeText(this, "Your location is temporarily unavailable", Toast.LENGTH_SHORT).show();
+                    }
+                    // TODO make getting location device type text, same as in Main
+                    return true;
+            }
+            return true;
+    }
+   
+    // DIALOG FUNCTIONS
+   
+    public static final int DIALOG_SETTINGS = 0;
+   
+    private static final boolean [] SETTINGS_DEFAULT = {false, false, false};
+    private final boolean [] settingsChecked = SETTINGS_DEFAULT.clone();
+   
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        super.onCreateDialog(id);
+        switch (id) {
+            case DIALOG_SETTINGS:
+            default: {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                CharSequence[] settings = { "Hide closed locations", "Hide no meal plan", "Hide no meal money" };
+
+                builder.setMultiChoiceItems(settings, settingsChecked, new DialogInterface.OnMultiChoiceClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        settingsChecked[which] = isChecked;
+                            ((AlertDialog) dialog).getListView().setItemChecked(which, isChecked);
+                    }
+                });
+                   
+                builder.setNeutralButton("Done", new DialogInterface.OnClickListener() {
+   
+                    public void onClick(DialogInterface dialog, int which) {
+                    DiningMap.this.updateSettings();
+                    dialog.dismiss();
+                    }
+                });
+                   
+                builder.setNegativeButton("Set Defaults", new DialogInterface.OnClickListener() {           
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        for (int i = 0; i<SETTINGS_DEFAULT.length; i++) {
+                            settingsChecked[i]=SETTINGS_DEFAULT[i];
+                        }
+                        DiningMap.this.updateSettings();
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setTitle("Settings");
+
+                return builder.create();
+            }
+        }
+    }
+   
+    @Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+            super.onPrepareDialog(id, dialog);
+            switch (id) {
+            case DIALOG_SETTINGS:
+                    for (int i = 0; i < settingsChecked.length; i++) {
+                            // TODO make this work correctly, (messes up if set Defaults is pressed
+                            ((AlertDialog)dialog).getListView().setItemChecked(i, settingsChecked[i]);
+                    }
+            }
+    }
+   
+    private void updateSettings() {
+            mDiningOverlay.setHideForFilter(settingsChecked[0], AllOverlays.FILTER_CLOSED);
+            mDiningOverlay.setHideForFilter(settingsChecked[1], AllOverlays.FILTER_PLAN);
+            mDiningOverlay.setHideForFilter(settingsChecked[2], AllOverlays.FILTER_MONEY);
+            mDiningOverlay.notifyDataSetChanged();
+            myMap.invalidate();
+    }    
 }

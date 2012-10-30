@@ -1,6 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_settings"
-        android:title="@string/menu_settings"
-        android:orderInCategory="100"
+    <item android:id="@+id/menu_sort_open"
+        android:title="Sort by Open/Closed"
+        android:orderInCategory="1"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_sort_name"
+        android:title="Sort by Name"
+        android:orderInCategory="2"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_sort_distance"
+        android:title="Sort by Distance"
+        android:orderInCategory="3"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_sort_plan"
+        android:title="Sort by Meal Plan"
+        android:orderInCategory="4"
         android:showAsAction="never" />
 </menu>
