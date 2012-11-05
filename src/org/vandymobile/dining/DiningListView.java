@@ -41,7 +41,7 @@ public class DiningListView extends ListActivity {
         private ImageView imgView;
         private int id;
         }
-    public static Integer[] planFilter = {3,7,9,11,12,13,15,16,20,27,28,29,30,37,38,39,41,42,43,44,45};
+    //public static Integer[] planFilter = {3,7,9,11,12,13,15,16,20,27,28,29,30,37,38,39,41,42,43,44,45};
     private IconicAdapter mCurAdapter;
     private GeoPoint curLoc = null;
     private Time now;
@@ -100,15 +100,15 @@ public class DiningListView extends ListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         if (item.getItemId() == R.id.menu_sort_open){
-        	setSortOpen();
+            setSortOpen();
         } else if (item.getItemId() == R.id.menu_sort_name){
-        	setSortName();
+            setSortName();
         } else if (item.getItemId() == R.id.menu_sort_distance){
-        	setSortDistance();
+            setSortDistance();
         } else if (item.getItemId() == R.id.menu_sort_plan){
-        	setSortPlan();
+            setSortPlan();
         }
-    	return true;
+        return true;
     }
     
     public void onListItemClick(ListView parent, View v, int position, long id) {
@@ -519,7 +519,7 @@ public class DiningListView extends ListActivity {
                 TextView partition;
                 partition = createPartition(secondPartitionTitle);
                 return partition;
-            } else if (position > secondPartitionId){
+            } else if (!isFirstPos && position > secondPartitionId){
                 position--;
             }//TODO clean this mess up
             
@@ -567,11 +567,36 @@ public class DiningListView extends ListActivity {
             partition.setFocusable(false);
             partition.setClickable(false);//TODO figure out why the partition is clickable...
             partition.setLongClickable(false);
+            partition.setOnClickListener(new View.OnClickListener() {
+                
+                @Override
+                public void onClick(View v) {//Temporary so the app doesn't crash when partitions are clicked
+                }
+            });
             partition.setTextSize((float) 14.0);
             partition.setTypeface(Typeface.DEFAULT_BOLD);
             partition.setText(text);
             return partition;
         }
+        
+        @Override
+        public boolean isEnabled(int i) {
+        	if (i == 1){
+        		return false;
+        	} else if (i == 0){
+        		return true;
+        	}
+            if (i < mClosestLoc){
+            	i = i - 2;
+            } else if (i > mClosestLoc){
+            	i--;
+            }
+        	if (i == secondPartitionId){
+                return false;
+            }
+            return true;
+        }
+
     }
 
     public class MyLocationListener implements LocationListener{
@@ -586,16 +611,13 @@ public class DiningListView extends ListActivity {
         }
         
         public void onProviderDisabled(String provider) {
-            // TODO Auto-generated method stub
         }
 
         public void onProviderEnabled(String provider) {
-            // TODO Auto-generated method stub
         }
 
         public void onStatusChanged(String provider,
             int status, Bundle extras) {
-            // TODO Auto-generated method stub
         }
     }
 }
