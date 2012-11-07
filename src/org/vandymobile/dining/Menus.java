@@ -20,8 +20,9 @@ import android.widget.TextView;
 
 public class Menus extends Activity {
 
-	private static Locations loc;
-	
+    private static Locations loc;
+    private int id;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,9 +31,14 @@ public class Menus extends Activity {
         loc = Locations.getInstance(getApplicationContext());
         
         Intent i = getIntent();
-        String[] click = {"You clicked Breakfast!","You clicked Lunch!","You clicked Dinner!","What did you click?"};
-        int page = i.getIntExtra("page", 3);
-        ((TextView)findViewById(R.id.menu_tv)).setText(click[page]);
+        String[] click = {"Breakfast","Lunch","Dinner","[ERROR: bad meal input]"};
+        int page = i.getIntExtra("meal", 3);
+        id = i.getIntExtra("restaurant", -10);
+        if (id == -10){
+            ((TextView)findViewById(R.id.menu_tv)).setText("This would show the general menu page for all locations.");
+        } else {
+            ((TextView)findViewById(R.id.menu_tv)).setText("This would show the menus for "+click[page]+ " at "+loc.findRestaurantById(id).mName);
+        }
         
     }
 
@@ -44,30 +50,30 @@ public class Menus extends Activity {
     
     public void menusList(List<MenuListItem> menus, ScrollView mainScrollView)
     {
-    	LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         
         
-    	Iterator<MenuListItem> _it = menus.iterator();
-    	
-    	while (_it.hasNext()){
-    		MenuListItem x =_it.next();
-    		RelativeLayout item = (RelativeLayout) inflater.inflate(R.layout.menulistitem, null);
-    		
-    		((TextView)item.findViewById(R.id.menulistitemtitle)).setText(x.getTitle());
-    		
-    		
-    		List<String> listMenu = x.getMenus();
-    		Iterator<String> menuListIterator = listMenu.iterator();
-    		
-    		TextView cur;
-    		while(menuListIterator.hasNext()){
-    			String y = menuListIterator.next();
-    			cur = new TextView(getApplicationContext());
-    			cur.setText(y);
-    			item.addView(cur);
-    		}
-    		mainScrollView.addView(item);
-    		
-    	}
+        Iterator<MenuListItem> _it = menus.iterator();
+        
+        while (_it.hasNext()){
+            MenuListItem x =_it.next();
+            RelativeLayout item = (RelativeLayout) inflater.inflate(R.layout.menulistitem, null);
+            
+            ((TextView)item.findViewById(R.id.menulistitemtitle)).setText(x.getTitle());
+            
+            
+            List<String> listMenu = x.getMenus();
+            Iterator<String> menuListIterator = listMenu.iterator();
+            
+            TextView cur;
+            while(menuListIterator.hasNext()){
+                String y = menuListIterator.next();
+                cur = new TextView(getApplicationContext());
+                cur.setText(y);
+                item.addView(cur);
+            }
+            mainScrollView.addView(item);
+            
+        }
     }
 }

@@ -119,10 +119,10 @@ public class DiningListView extends ListActivity {
         } else if (id > 0 && id <= mClosestLoc){
             id--;
         }*/
-        startRestaurantDetails(position, _id);
+        startRestaurantDetails(_id);
     }
     
-    public void startRestaurantDetails(int position, long id){
+    public void startRestaurantDetails(int id){
         //Toast.makeText(getApplicationContext(), "["+position+"]:["+id+"]", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getApplicationContext(), LocationDetails.class).putExtra("id", id);
         startActivity(intent);
@@ -581,17 +581,17 @@ public class DiningListView extends ListActivity {
         
         @Override
         public boolean isEnabled(int i) {
-        	if (i == 1){
-        		return false;
-        	} else if (i == 0){
-        		return true;
-        	}
-            if (i < mClosestLoc){
-            	i = i - 2;
-            } else if (i > mClosestLoc){
-            	i--;
+            if (i == 1){
+                return false;
+            } else if (i == 0){
+                return true;
             }
-        	if (i == secondPartitionId){
+            if (i < mClosestLoc){
+                i = i - 2;
+            } else if (i > mClosestLoc){
+                i--;
+            }
+            if (i == secondPartitionId){
                 return false;
             }
             return true;

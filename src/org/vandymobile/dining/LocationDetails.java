@@ -30,7 +30,7 @@ public class LocationDetails extends Activity {
     private TextView mRange;
     private static int today = new GregorianCalendar().get(Calendar.DAY_OF_WEEK) - 1;
     private int curHoursDisplay;
-    private static Long id;
+    private static int id;
     private static Locations loc;
     private static Restaurant mThisLoc;
     
@@ -39,7 +39,7 @@ public class LocationDetails extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_details);
         
-        id = this.getIntent().getLongExtra("id", -1); //get the location ID from the intent
+        id = this.getIntent().getIntExtra("id", -1); //get the location ID from the intent
         loadLocation(id); //set the name and other (non-changing) things for the location
         
         curHoursDisplay = today; //this keeps track of what day is currently displayed in the hours box
@@ -177,11 +177,11 @@ public class LocationDetails extends Activity {
         return res;
     }
     
-    private void loadLocation(Long id){
+    private void loadLocation(int id){
         loc = Locations.getInstance(getApplicationContext());
-        mThisLoc = loc.mLocations[id.intValue()];
+        mThisLoc = loc.findRestaurantById(id);
         String name = "default name";
-        name = mThisLoc.mName;        
+        name = mThisLoc.mName;
 
         Toast.makeText(getApplicationContext(), "id is: ["+id+"]", Toast.LENGTH_SHORT).show();
         
@@ -189,22 +189,22 @@ public class LocationDetails extends Activity {
         nametv.setText(name);
         
         if (!mThisLoc.mPhone.equals("null")){
-	        TextView phonetv = (TextView) findViewById(R.restaurantDetails.phone);
-	        phonetv.setText(mThisLoc.mPhone);
-	        phonetv.setVisibility(View.VISIBLE);
-	        
-	        TextView phoneheader = (TextView) findViewById(R.restaurantDetails.phone_header);
-	        phoneheader.setVisibility(View.VISIBLE);
+            TextView phonetv = (TextView) findViewById(R.restaurantDetails.phone);
+            phonetv.setText(mThisLoc.mPhone);
+            phonetv.setVisibility(View.VISIBLE);
+            
+            TextView phoneheader = (TextView) findViewById(R.restaurantDetails.phone_header);
+            phoneheader.setVisibility(View.VISIBLE);
         }
         
         
         if (!mThisLoc.mUrl.equals("null")){
-	        TextView urltv = (TextView) findViewById(R.restaurantDetails.web);
-	        urltv.setText(mThisLoc.mUrl);
-	        urltv.setVisibility(View.VISIBLE);
-	        
-	        TextView urlheader = (TextView) findViewById(R.restaurantDetails.web_header);
-	        urlheader.setVisibility(View.VISIBLE);
+            TextView urltv = (TextView) findViewById(R.restaurantDetails.web);
+            urltv.setText(mThisLoc.mUrl);
+            urltv.setVisibility(View.VISIBLE);
+            
+            TextView urlheader = (TextView) findViewById(R.restaurantDetails.web_header);
+            urlheader.setVisibility(View.VISIBLE);
         }
     }
 
@@ -254,7 +254,8 @@ public class LocationDetails extends Activity {
                 public void onClick(View v) {
                     int page = ((ViewPager) pager).getCurrentItem();
                     Intent i = new Intent(getApplicationContext(), Menus.class);
-                    i.putExtra("page", page);
+                    i.putExtra("meal", page);
+                    i.putExtra("restaurant", id);
                     startActivity(i);
                 }
             });

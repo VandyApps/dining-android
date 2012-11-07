@@ -87,6 +87,6 @@ public class Locations {
      * @return: the actual restaurant object
      */
     public Restaurant findRestaurantById(int id){
-    	return mLocations[mIds[id-1]];
+        return mLocations[mIds[id-1]];
     }
 }
