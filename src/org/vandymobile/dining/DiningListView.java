@@ -80,11 +80,11 @@ public class DiningListView extends ListActivity {
             curLoc = new GeoPoint((int)(x.getLatitude()*1000000), 
                              (int)(x.getLongitude()*1000000));//current position
         } else {
-            Toast.makeText(getApplicationContext(), "Couldn't get location - defaulting", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Couldn't resolve location - using default", Toast.LENGTH_LONG).show();
             curLoc = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
         
-        String[] adapterInput = new String[loc.mCount + 2];
+        String[] adapterInput = new String[loc.mCount + 3];
         mCurAdapter = new IconicAdapter(this, adapterInput);
         setListAdapter(mCurAdapter);
         setSortOpen();
@@ -230,7 +230,7 @@ public class DiningListView extends ListActivity {
         // BE CAREFUL USING THIS METHOD. Currently it assumes that any time which is before 5:00am is a closing time and 
         //         occurs on the following day (if the current time is after 5:00am)
         // *****************************************************************************************************************
-            // (e.g. if it is currently 11pm and Sam's Sports Bar closes at 3am today, 
+            // (e.g. if it is currently 11pm and Sam's Sports Bar closes at 3am "today", 
                     //the Time object returned will be referencing tomorrow's date)
         
         Time iTime = new Time(Time.getCurrentTimezone());
@@ -337,7 +337,9 @@ public class DiningListView extends ListActivity {
                 tmpcount++;
             }
         }
-        secondPartitionId = retcount;
+        //add 2 for the initial 2 views in the list 
+        //(closest and first partition)
+        secondPartitionId = retcount + 2;
         for (int i = 0; i < tmpcount; i++){
             ret[retcount] = tmp[i];
             retcount++;
@@ -350,6 +352,7 @@ public class DiningListView extends ListActivity {
         for (int i = 0; i < loc.mCount; i++){
             ret[i] = loc.mLocations[i].mId;
         }
+        secondPartitionId = loc.mCount + 2;
         return ret;
     }
     
@@ -365,6 +368,7 @@ public class DiningListView extends ListActivity {
         for (int i = 0; i < loc.mCount; i++){
             ret[i] = values.get(dists[i]);
         }
+        secondPartitionId = loc.mCount + 2;
         return ret;
     }
     
@@ -383,7 +387,9 @@ public class DiningListView extends ListActivity {
                 tmpcount++;
             }
         }
-        secondPartitionId = retcount;
+        //add 2 for the initial 2 views in the list 
+        //(closest and first partition)
+        secondPartitionId = retcount + 2;
         for (int i = 0; i < tmpcount; i++){
             ret[retcount] = tmp[i];
             retcount++;
@@ -457,7 +463,13 @@ public class DiningListView extends ListActivity {
 
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder holder;
+            
+            if (position == (loc.mCount + 2) && (!sortByPlan || !sortByOpen)){
+            	return new View(getApplicationContext());
+            }
+            
             if (position == 0){
+                //inflate the special layout for the top item
                 LayoutInflater inflater=context.getLayoutInflater();
                 convertView=inflater.inflate(R.layout.onerow, null);
                 holder = new ViewHolder();
@@ -468,6 +480,7 @@ public class DiningListView extends ListActivity {
                 holder.imgView = (ImageView) convertView.findViewById(R.id.image);
                 convertView.setTag(holder);
             } else {
+                //if there is no view or if the view is not the normal row view
                 if (convertView == null || convertView.getId() == R.id.badid || convertView.getTag() == null) {
                     LayoutInflater inflater=context.getLayoutInflater();
                     convertView=inflater.inflate(R.layout.row, null);
@@ -479,7 +492,8 @@ public class DiningListView extends ListActivity {
                     holder.imgView = (ImageView) convertView.findViewById(R.id.image);
                     convertView.setTag(holder);
                     
-                } else if (convertView.getId() == R.id.badid) {
+                /*} else if (convertView.getId() == R.id.badid) {
+                    //TODO test if this is necessary
                     LayoutInflater inflater=context.getLayoutInflater();
                     convertView=inflater.inflate(R.layout.row, null);
                     holder = new ViewHolder();
@@ -490,14 +504,17 @@ public class DiningListView extends ListActivity {
                     holder.imgView = (ImageView) convertView.findViewById(R.id.image);
                     convertView.setTag(holder);
                     
-                } else {
+                */} else {
+                    //if we got back a usable normal recycled view, grab the tag
                     holder = (ViewHolder) convertView.getTag();
                 }
             }
             
             
-            
+            /*
             //TODO clean this mess up
+            //TODO possible solution: have the closest location show up at the top but ALSO
+            // in its normal position in the list. This should make sorting much easier
             boolean isFirstPos = false;
             if (position == 0){
                 position = mClosestLoc;
@@ -514,14 +531,14 @@ public class DiningListView extends ListActivity {
                 position--;
             }//TODO clean this mess up
             
-            if (!isFirstPos && position == secondPartitionId){ //this goes after the others because the value needs to be checked after 
-                                                //position is adjusted for the other things which were added
+            if (!isFirstPos && position == secondPartitionId){ //this goes after the others because the value needs to be checked 
+                                                //after position is adjusted for the other things which were added
                 TextView partition;
                 partition = createPartition(secondPartitionTitle);
                 return partition;
             } else if (!isFirstPos && position > secondPartitionId){
                 position--;
-            }//TODO clean this mess up
+            }//TODO clean this mess up*/
             
             String[] tempHours;
             int hoursDay = now.weekDay;
@@ -532,11 +549,47 @@ public class DiningListView extends ListActivity {
                     hoursDay = 6;
                 }
             }
+
+            
+            /*
+             * Pseudo-code logic for determining position
+             * if position is 0, calculate everything using mClosestLoc instead of position
+             * if position is 1, make a partition and nothing else
+             * if position is 2 or greater, but less than the position of the second partition, 
+             *     calculate using (position-2)
+             * if position is equal to the position of the second partition, make a partition
+             * if position is greater than the position of the second partition, calculate using (position-3)
+             */
+            if (position < 0){
+            	//This should never happen
+            	Toast.makeText(getApplicationContext(), "Bad Position; aborting", Toast.LENGTH_LONG).show();
+            	return createPartition("ERROR!!");
+            }
+            
+            
+            boolean isFirstPos = false;
+            if (position == 0){
+            	position = mClosestLoc;
+            	isFirstPos = true;
+            } else if (position == 1){
+                TextView partition;
+                partition = createPartition(firstPartitionTitle);
+                return partition;
+            } else if (position > 1 && position < secondPartitionId){
+            	position = position - 2;
+            } else if (position == secondPartitionId){
+                TextView partition;
+                partition = createPartition(secondPartitionTitle);
+                return partition;
+            } else if (position > secondPartitionId){
+            	position = position - 3;
+            }
             
             
             Restaurant currentRestaurant;
             if (isFirstPos){
-                currentRestaurant = loc.findRestaurantById(position);
+                currentRestaurant = loc.findRestaurantById(mClosestLoc); 
+                //if we enter this block then position = mClosestLoc
             }else{
                 currentRestaurant = loc.findRestaurantById(curIdList[position]);
             }       
@@ -596,7 +649,6 @@ public class DiningListView extends ListActivity {
             }
             return true;
         }
-
     }
 
     public class MyLocationListener implements LocationListener{
