@@ -84,6 +84,7 @@ public class DiningListView extends ListActivity {
             curLoc = new GeoPoint(36143091, -86804699); //defaults to Vanderbilt if the current position cannot be determined
         }
         
+        //Add 3 for the 2 partitions and the firstloc
         String[] adapterInput = new String[loc.mCount + 3];
         mCurAdapter = new IconicAdapter(this, adapterInput);
         setListAdapter(mCurAdapter);
@@ -464,6 +465,8 @@ public class DiningListView extends ListActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder holder;
             
+            //The adapter is created with enough slots for all the locations, plus 2 partitions and the firstloc
+            //if we are on a sort mode which only requires one partition, return an empty view for the very last slot.
             if (position == (loc.mCount + 2) && (!sortByPlan || !sortByOpen)){
             	return new View(getApplicationContext());
             }
