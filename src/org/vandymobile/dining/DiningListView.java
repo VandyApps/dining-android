@@ -112,19 +112,23 @@ public class DiningListView extends ListActivity {
         return true;
     }
     
+    
+    /**
+     * This method is triggered when an item in the list is clicked
+     * @param v The view which was clicked
+     */
     public void onListItemClick(ListView parent, View v, int position, long id) {
         ViewHolder holder = (ViewHolder)v.getTag();
         int _id = holder.id;
-        /*if (_id == 0){
-            _id = mClosestLoc;
-        } else if (id > 0 && id <= mClosestLoc){
-            id--;
-        }*/
         startRestaurantDetails(_id);
     }
     
+    /**
+     * This method is used when an item in the list is clicked.
+     * It launches a detail activity with more details about the clicked item
+     * @param id The id for the restaurant we are launching
+     */
     public void startRestaurantDetails(int id){
-        //Toast.makeText(getApplicationContext(), "["+position+"]:["+id+"]", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getApplicationContext(), LocationDetails.class).putExtra("id", id);
         startActivity(intent);
     }
@@ -149,10 +153,11 @@ public class DiningListView extends ListActivity {
      * @return: the id of the closest open dining location
      */
     private int getClosestOpen(){
-        int id = 0;
-        double smallest = getDistance(curLoc, loc.mLocations[0].mLocation);
-        for (int i = 0; i < loc.mCount; i++){
-            Restaurant current = loc.mLocations[i];
+    	Restaurant current = loc.mLocations[0];
+        int id = current.mId;
+        double smallest = getDistance(curLoc, current.mLocation);
+        for (int i = 1; i < loc.mCount; i++){
+            current = loc.mLocations[i];
             if (current.isOpen()){
                 double distance = getDistance(curLoc, current.mLocation);
                 if (distance < smallest){
@@ -232,7 +237,7 @@ public class DiningListView extends ListActivity {
         //         occurs on the following day (if the current time is after 5:00am)
         // *****************************************************************************************************************
             // (e.g. if it is currently 11pm and Sam's Sports Bar closes at 3am "today", 
-                    //the Time object returned will be referencing tomorrow's date)
+            //    the Time object returned will be referencing tomorrow's date)
         
         Time iTime = new Time(Time.getCurrentTimezone());
         Integer hour = null;
